@@ -34,8 +34,7 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
-    const rows = Math.max(3, text.split('\n').length)
-    return `<div class="prompt-block"><textarea class="prompt-textarea" readonly rows="${rows}">${escaped}</textarea><button class="copy-btn">Copy prompt</button></div>`
+    return `<div class="prompt-block"><textarea class="prompt-textarea" readonly>${escaped}</textarea><button class="copy-btn">Copy prompt</button></div>`
   }
 
   const html = await marked(mod.content ?? '', { breaks: true, renderer })

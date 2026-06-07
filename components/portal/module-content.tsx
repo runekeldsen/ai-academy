@@ -7,6 +7,14 @@ export function ModuleContent({ html }: { html: string }) {
 
   useEffect(() => {
     if (!ref.current) return
+
+    // Auto-size each textarea to fit its content
+    ref.current.querySelectorAll<HTMLTextAreaElement>('.prompt-textarea').forEach(textarea => {
+      textarea.style.height = 'auto'
+      textarea.style.height = textarea.scrollHeight + 'px'
+    })
+
+    // Wire up copy buttons
     ref.current.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const textarea = btn.previousElementSibling as HTMLTextAreaElement | null
