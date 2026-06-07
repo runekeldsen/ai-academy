@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { inviteLearner } from '@/actions/learners'
+import { createLearner } from '@/actions/learners'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,16 +12,19 @@ export function InviteForm({ origin }: { origin: string }) {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (password.length < 8) { setError('Password must be at least 8 characters'); return }
     setLoading(true)
     setError('')
 
-    const result = await inviteLearner({ firstName, lastName, email, origin })
+    const result = await createLearner({ firstName, lastName, email, password })
 
     if (result.error) {
       setError(result.error)
@@ -35,22 +38,48 @@ export function InviteForm({ origin }: { origin: string }) {
 
   if (success) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-8 text-center space-y-4">
-        <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto" style={{ backgroundColor: '#dcfce7' }}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2">
-            <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+      <div className="bg-white rounded-xl border border-gray-200 p-8 space-y-5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: '#dcfce7' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2">
+              <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <p className="font-heading font-semibold text-gray-800">{firstName} {lastName} created</p>
+            <p className="text-sm text-gray-500">{email}</p>
+          </div>
         </div>
-        <h2 className="font-heading text-lg font-semibold text-gray-800">Invitation sent!</h2>
-        <p className="text-sm text-gray-500">
-          <strong>{firstName} {lastName}</strong> will receive an email with a link to activate their account.
-        </p>
-        <div className="flex gap-3 justify-center pt-2">
+
+        <div className="bg-gray-50 rounded-lg border border-gray-200 p-4 space-y-2">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">First-use credentials</p>
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <p className="text-sm text-gray-700"><span className="font-medium">Email:</span> {email}</p>
+              <p className="text-sm text-gray-700">
+                <span className="font-medium">Password:</span>{' '}
+                {showPassword ? password : '••••••••'}
+                <button
+                  onClick={() => setShowPassword(v => !v)}
+                  className="ml-2 text-xs underline"
+                  style={{ color: '#2563eb' }}
+                >
+                  {showPassword ? 'hide' : 'show'}
+                </button>
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-gray-400 mt-1">
+            Share these credentials with the learner. You can also send them a login email from the Learners page when ready.
+          </p>
+        </div>
+
+        <div className="flex gap-3">
           <Button
-            onClick={() => { setSuccess(false); setFirstName(''); setLastName(''); setEmail('') }}
+            onClick={() => { setSuccess(false); setFirstName(''); setLastName(''); setEmail(''); setPassword(''); setShowPassword(false) }}
             variant="outline"
           >
-            Invite another
+            Add another
           </Button>
           <Button
             onClick={() => router.push('/trainer/learners')}
@@ -102,8 +131,21 @@ export function InviteForm({ origin }: { origin: string }) {
           placeholder="jane@example.com"
         />
       </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="password">First-use password</Label>
+        <Input
+          id="password"
+          type="text"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+          required
+          minLength={8}
+          placeholder="At least 8 characters"
+        />
+        <p className="text-xs text-gray-400">Share this with the learner so they can log in immediately. They can change it later.</p>
+      </div>
       <Button type="submit" className="w-full" disabled={loading} style={{ backgroundColor: '#2563eb' }}>
-        {loading ? 'Sending invite…' : 'Send invitation'}
+        {loading ? 'Creating…' : 'Create learner'}
       </Button>
     </form>
   )

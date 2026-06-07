@@ -30,11 +30,11 @@ export async function deleteLearner(userId: string): Promise<{ error?: string }>
   return {}
 }
 
-export async function inviteLearner(data: {
+export async function createLearner(data: {
   firstName: string
   lastName: string
   email: string
-  origin: string
+  password: string
 }): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -46,14 +46,16 @@ export async function inviteLearner(data: {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const { data: invited, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(data.email, {
-    data: { first_name: data.firstName, last_name: data.lastName, academy_role: 'learner' },
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/auth/accept-invite`,
+  const { data: created, error: createErr } = await admin.auth.admin.createUser({
+    email: data.email,
+    password: data.password,
+    email_confirm: true,
+    user_metadata: { first_name: data.firstName, last_name: data.lastName, academy_role: 'learner' },
   })
-  if (inviteErr) return { error: inviteErr.message }
+  if (createErr) return { error: createErr.message }
 
   const { error: profileErr } = await admin.from('academy_profiles').upsert({
-    id: invited.user.id,
+    id: created.user.id,
     first_name: data.firstName,
     last_name: data.lastName,
     email: data.email,

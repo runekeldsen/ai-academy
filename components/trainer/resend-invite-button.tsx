@@ -33,7 +33,7 @@ export function ResendInviteButton({ userId, origin }: { userId: string; origin:
         className="text-xs font-medium hover:underline disabled:opacity-50"
         style={{ color: '#2563eb' }}
       >
-        {loading ? 'Sending…' : 'Resend invite'}
+        {loading ? 'Sending…' : 'Send login email'}
       </button>
       {error && <span className="text-xs text-red-500">{error}</span>}
     </div>
