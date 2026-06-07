@@ -12,6 +12,25 @@ function CallbackHandler() {
     const next = searchParams.get('next') ?? '/'
     const supabase = createClient()
 
+    const code = searchParams.get('code')
+    const tokenHash = searchParams.get('token_hash')
+    const type = searchParams.get('type') as 'invite' | 'recovery' | 'email' | null
+
+    if (code) {
+      supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
+        router.replace(error ? '/auth/login?error=invalid_link' : next)
+      })
+      return
+    }
+
+    if (tokenHash && type) {
+      supabase.auth.verifyOtp({ type, token_hash: tokenHash }).then(({ error }) => {
+        router.replace(error ? '/auth/login?error=invalid_link' : next)
+      })
+      return
+    }
+
+    // Implicit flow: tokens arrive in the URL fragment, picked up automatically
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session && (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY')) {
         subscription.unsubscribe()
