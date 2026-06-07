@@ -4,6 +4,7 @@ import { Sidebar } from '@/components/shared/sidebar'
 
 const navItems = [
   { label: 'Dashboard', href: '/portal' },
+  { label: 'Support', href: '/portal/support' },
 ]
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
