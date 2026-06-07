@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { marked } from 'marked'
+import { ModuleContent } from '@/components/portal/module-content'
 
 export default async function ModulePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -50,10 +51,7 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 p-8">
-        <div
-          className="module-content"
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
+        <ModuleContent html={html} />
       </div>
 
       <div className="pt-2">

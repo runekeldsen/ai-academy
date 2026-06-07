@@ -178,3 +178,22 @@
   margin: 2rem 0;
 }
 .module-content h2:first-child { margin-top: 0; }
+.module-content pre .copy-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  background: #334155;
+  color: #94a3b8;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1.5;
+}
+.module-content pre .copy-btn:hover {
+  background: #475569;
+  color: #e2e8f0;
+}
