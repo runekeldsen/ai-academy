@@ -47,7 +47,7 @@ export default async function LearnerPortal() {
         <h1 className="font-heading text-2xl font-bold text-gray-900">
           Welcome, {profile?.first_name ?? 'Learner'}
         </h1>
-        <p className="mt-1 text-sm text-gray-500">Your Rune's AI Academy training programme.</p>
+        <p className="mt-1 text-sm text-gray-500">Your AI Academy training programme.</p>
       </div>
 
       {publishedSections.length === 0 ? (
