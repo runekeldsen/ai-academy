@@ -47,14 +47,17 @@ export async function inviteLearner(data: {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const { data: invited, error: inviteErr } = await admin.auth.admin.inviteUserByEmail(data.email, {
-    data: { first_name: data.firstName, last_name: data.lastName, academy_role: 'learner' },
-    redirectTo: `${data.origin}/auth/callback?next=/auth/accept-invite`,
+  const { data: generated, error: genErr } = await admin.auth.admin.generateLink({
+    type: 'invite',
+    email: data.email,
+    options: {
+      data: { first_name: data.firstName, last_name: data.lastName, academy_role: 'learner' },
+    },
   })
-  if (inviteErr) return { error: inviteErr.message }
+  if (genErr) return { error: genErr.message }
 
   const { error: profileErr } = await admin.from('academy_profiles').upsert({
-    id: invited.user.id,
+    id: generated.user.id,
     first_name: data.firstName,
     last_name: data.lastName,
     email: data.email,
@@ -62,6 +65,24 @@ export async function inviteLearner(data: {
     trainer_id: user.id,
   })
   if (profileErr) return { error: profileErr.message }
+
+  const origin = process.env.NEXT_PUBLIC_SITE_URL!
+  const link = `${origin}/auth/callback?token_hash=${generated.properties.hashed_token}&type=invite&next=/auth/accept-invite`
+
+  const { Resend } = await import('resend')
+  const resend = new Resend(process.env.RESEND_API_KEY!)
+  const { error: emailErr } = await resend.emails.send({
+    from: 'AI Academy <onboarding@resend.dev>',
+    to: data.email,
+    subject: `${data.firstName}, you've been invited to AI Academy`,
+    html: `
+      <p>Hi ${data.firstName},</p>
+      <p>You've been invited to AI Academy. Click the link below to set up your account:</p>
+      <p><a href="${link}" style="color:#2563eb">Accept invitation →</a></p>
+      <p style="color:#9ca3af;font-size:12px">This link expires in 24 hours.</p>
+    `,
+  })
+  if (emailErr) return { error: String(emailErr) }
 
   revalidatePath('/trainer/learners')
   revalidatePath('/trainer')
@@ -75,7 +96,7 @@ export async function resendInvite(userId: string, origin: string): Promise<{ er
 
   const { data: learner } = await supabase
     .from('academy_profiles')
-    .select('email')
+    .select('email, first_name')
     .eq('id', userId)
     .eq('trainer_id', user.id)
     .single()
@@ -87,9 +108,29 @@ export async function resendInvite(userId: string, origin: string): Promise<{ er
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   )
 
-  const { error } = await admin.auth.admin.inviteUserByEmail(learner.email, {
-    redirectTo: `${origin}/auth/callback?next=/auth/accept-invite`,
+  const { data: generated, error: genErr } = await admin.auth.admin.generateLink({
+    type: 'recovery',
+    email: learner.email,
   })
-  if (error) return { error: error.message }
+  if (genErr) return { error: genErr.message }
+
+  const siteOrigin = process.env.NEXT_PUBLIC_SITE_URL!
+  const link = `${siteOrigin}/auth/callback?token_hash=${generated.properties.hashed_token}&type=recovery&next=/auth/reset-password`
+
+  const { Resend } = await import('resend')
+  const resend = new Resend(process.env.RESEND_API_KEY!)
+  const { error: emailErr } = await resend.emails.send({
+    from: 'AI Academy <onboarding@resend.dev>',
+    to: learner.email,
+    subject: 'Set up your AI Academy account',
+    html: `
+      <p>Hi ${learner.first_name},</p>
+      <p>Click the link below to set up your AI Academy password:</p>
+      <p><a href="${link}" style="color:#2563eb">Set up account →</a></p>
+      <p style="color:#9ca3af;font-size:12px">This link expires in 1 hour.</p>
+    `,
+  })
+  if (emailErr) return { error: String(emailErr) }
+
   return {}
 }
