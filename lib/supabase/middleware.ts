@@ -48,14 +48,8 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
-  // Get role from academy_profiles
-  const { data: profile } = await supabase
-    .from('academy_profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  const role = profile?.role ?? 'learner'
+  // Read role from JWT metadata — avoids a DB round-trip and works before schema cache warms up
+  const role = (user.user_metadata?.academy_role as string) ?? 'learner'
   const isTrainerRole = role === 'trainer' || role === 'admin'
 
   // Role-based routing

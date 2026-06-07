@@ -6,7 +6,7 @@ export default async function LearnerPortal() {
 
   const { data: profile } = await supabase
     .from('academy_profiles')
-    .select('first_name, last_name')
+    .select('first_name')
     .eq('id', user!.id)
     .single()
 

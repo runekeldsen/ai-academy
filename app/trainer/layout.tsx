@@ -14,13 +14,14 @@ export default async function TrainerLayout({ children }: { children: React.Reac
 
   if (!user) redirect('/auth/login')
 
+  const role = (user.user_metadata?.academy_role as string) ?? 'learner'
+  if (role !== 'trainer' && role !== 'admin') redirect('/portal')
+
   const { data: profile } = await supabase
     .from('academy_profiles')
-    .select('role, first_name, last_name, avatar_url')
+    .select('first_name, last_name, avatar_url')
     .eq('id', user.id)
     .single()
-
-  if (profile?.role !== 'trainer' && profile?.role !== 'admin') redirect('/portal')
 
   return (
     <div className="flex min-h-screen">

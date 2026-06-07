@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { ResendInviteButton } from '@/components/trainer/resend-invite-button'
+import { DeleteLearnerButton } from '@/components/trainer/delete-learner-button'
 import { headers } from 'next/headers'
+
+type Learner = { id: string; first_name: string; last_name: string; email: string; created_at: string }
 
 export default async function LearnersPage() {
   const supabase = await createClient()
@@ -11,12 +14,12 @@ export default async function LearnersPage() {
   const { data: learners } = await supabase
     .from('academy_profiles')
     .select('id, first_name, last_name, email, created_at')
-    .eq('role', 'learner')
     .eq('trainer_id', user!.id)
+    .eq('role', 'learner')
     .order('created_at', { ascending: false })
 
   const { data: authStatus } = await supabase
-    .rpc('get_user_auth_status', { user_ids: (learners ?? []).map(l => l.id) })
+    .rpc('get_user_auth_status', { user_ids: (learners ?? []).map((l: Learner) => l.id) })
 
   return (
     <div className="space-y-6">
@@ -54,7 +57,7 @@ export default async function LearnersPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {learners.map(l => {
+              {(learners as Learner[]).map(l => {
                 const confirmed = authStatus?.find((a: { id: string; confirmed_at: string | null }) => a.id === l.id)?.confirmed_at
                 return (
                   <tr key={l.id} className="hover:bg-gray-50 transition-colors">
@@ -79,9 +82,12 @@ export default async function LearnersPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      {!confirmed && (
-                        <ResendInviteButton userId={l.id} origin={origin} />
-                      )}
+                      <div className="flex items-center justify-end gap-4">
+                        {!confirmed && (
+                          <ResendInviteButton userId={l.id} origin={origin} />
+                        )}
+                        <DeleteLearnerButton userId={l.id} />
+                      </div>
                     </td>
                   </tr>
                 )

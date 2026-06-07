@@ -12,13 +12,14 @@ export default async function PortalLayout({ children }: { children: React.React
 
   if (!user) redirect('/auth/login')
 
+  const role = (user.user_metadata?.academy_role as string) ?? 'learner'
+  if (role === 'trainer' || role === 'admin') redirect('/trainer')
+
   const { data: profile } = await supabase
     .from('academy_profiles')
-    .select('role, first_name, last_name, avatar_url')
+    .select('first_name, last_name, avatar_url')
     .eq('id', user.id)
     .single()
-
-  if (profile?.role === 'trainer' || profile?.role === 'admin') redirect('/trainer')
 
   return (
     <div className="flex min-h-screen">

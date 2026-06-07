@@ -13,12 +13,12 @@ export default async function TrainerDashboard() {
   const { data: learners } = await supabase
     .from('academy_profiles')
     .select('id, first_name, last_name, created_at')
-    .eq('role', 'learner')
     .eq('trainer_id', user!.id)
+    .eq('role', 'learner')
     .order('created_at', { ascending: false })
 
   const { data: allLearners } = await supabase
-    .rpc('get_user_auth_status', { user_ids: (learners ?? []).map(l => l.id) })
+    .rpc('get_user_auth_status', { user_ids: (learners ?? []).map((l: { id: string }) => l.id) })
 
   const confirmedCount = allLearners?.filter((l: { id: string; confirmed_at: string | null }) => l.confirmed_at).length ?? 0
   const pendingCount = (learners?.length ?? 0) - confirmedCount
@@ -63,7 +63,7 @@ export default async function TrainerDashboard() {
           </div>
         ) : (
           <ul className="divide-y divide-gray-100">
-            {learners.slice(0, 5).map(l => {
+            {(learners as { id: string; first_name: string; last_name: string }[]).slice(0, 5).map(l => {
               const confirmed = allLearners?.find((a: { id: string; confirmed_at: string | null }) => a.id === l.id)?.confirmed_at
               return (
                 <li key={l.id} className="flex items-center justify-between px-6 py-4">
