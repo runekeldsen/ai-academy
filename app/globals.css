@@ -199,3 +199,27 @@
   margin: 2rem 0;
 }
 .module-content h2:first-child { margin-top: 0; }
+
+.module-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.25rem 0;
+  font-size: 0.875rem;
+}
+.module-content th {
+  background: #f1f5f9;
+  text-align: left;
+  font-weight: 600;
+  color: #374151;
+  padding: 0.6rem 0.875rem;
+  border: 1px solid #e2e8f0;
+}
+.module-content td {
+  padding: 0.55rem 0.875rem;
+  border: 1px solid #e2e8f0;
+  color: #4b5563;
+  vertical-align: top;
+}
+.module-content tr:nth-child(even) td {
+  background: #f8fafc;
+}
