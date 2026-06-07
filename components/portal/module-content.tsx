@@ -7,27 +7,15 @@ export function ModuleContent({ html }: { html: string }) {
 
   useEffect(() => {
     if (!ref.current) return
-    const blocks = ref.current.querySelectorAll('pre')
-    blocks.forEach(pre => {
-      if (pre.querySelector('.copy-btn')) return
-
-      pre.style.position = 'relative'
-
-      const btn = document.createElement('button')
-      btn.className = 'copy-btn'
-      btn.textContent = 'Copy'
-      btn.setAttribute('aria-label', 'Copy to clipboard')
-
+    ref.current.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const code = pre.querySelector('code')
-        const text = code?.innerText ?? pre.innerText
-        navigator.clipboard.writeText(text).then(() => {
+        const textarea = btn.previousElementSibling as HTMLTextAreaElement | null
+        if (!textarea) return
+        navigator.clipboard.writeText(textarea.value).then(() => {
           btn.textContent = 'Copied!'
-          setTimeout(() => { btn.textContent = 'Copy' }, 2000)
+          setTimeout(() => { btn.textContent = 'Copy prompt' }, 2000)
         })
       })
-
-      pre.appendChild(btn)
     })
   }, [html])
 

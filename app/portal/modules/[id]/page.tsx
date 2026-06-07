@@ -26,7 +26,19 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
   if (!mod) notFound()
 
   const sectionTitle = (mod.academy_sections as unknown as { title: string } | null)?.title ?? ''
-  const html = await marked(mod.content ?? '', { breaks: true })
+
+  const renderer = new marked.Renderer()
+  renderer.code = ({ text }: { text: string }) => {
+    const escaped = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+    const rows = Math.max(3, text.split('\n').length)
+    return `<div class="prompt-block"><textarea class="prompt-textarea" readonly rows="${rows}">${escaped}</textarea><button class="copy-btn">Copy prompt</button></div>`
+  }
+
+  const html = await marked(mod.content ?? '', { breaks: true, renderer })
 
   return (
     <div className="max-w-3xl space-y-6">
