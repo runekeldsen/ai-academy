@@ -1,8 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 
-type Module = { id: string; title: string; description: string | null }
+type Module = { id: string; title: string; description: string | null; difficulty: string | null; duration_minutes: number | null }
 type Section = { id: string; title: string; academy_modules: Module[] }
+
+const difficultyStyle: Record<string, string> = {
+  Beginner:     'bg-green-50 text-green-700 border-green-200',
+  Intermediate: 'bg-amber-50 text-amber-700 border-amber-200',
+  Advanced:     'bg-red-50 text-red-700 border-red-200',
+}
 
 export default async function LearnerPortal() {
   const supabase = await createClient()
@@ -16,7 +22,7 @@ export default async function LearnerPortal() {
 
   const { data: sections } = await supabase
     .from('academy_sections')
-    .select('id, title, academy_modules(id, title, description)')
+    .select('id, title, academy_modules(id, title, description, difficulty, duration_minutes)')
     .eq('trainer_id', profile?.trainer_id ?? '')
     .order('created_at', { ascending: true })
 
@@ -59,10 +65,10 @@ export default async function LearnerPortal() {
                   <Link
                     key={mod.id}
                     href={`/portal/modules/${mod.id}`}
-                    className="group bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all space-y-3"
+                    className="group bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all flex flex-col gap-3"
                   >
                     <div
-                      className="w-9 h-9 rounded-lg flex items-center justify-center"
+                      className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
                       style={{ backgroundColor: '#dbeafe' }}
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -73,7 +79,8 @@ export default async function LearnerPortal() {
                         <polyline points="10 9 9 9 8 9"/>
                       </svg>
                     </div>
-                    <div>
+
+                    <div className="flex-1">
                       <h3 className="font-heading font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
                         {mod.title}
                       </h3>
@@ -81,8 +88,26 @@ export default async function LearnerPortal() {
                         <p className="mt-1 text-sm text-gray-500 line-clamp-2">{mod.description}</p>
                       )}
                     </div>
-                    <div className="flex items-center gap-1 text-xs font-medium" style={{ color: '#2563eb' }}>
-                      Start <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2">
+                        {mod.difficulty && (
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${difficultyStyle[mod.difficulty] ?? 'bg-gray-50 text-gray-600 border-gray-200'}`}>
+                            {mod.difficulty}
+                          </span>
+                        )}
+                        {mod.duration_minutes && (
+                          <span className="flex items-center gap-1 text-xs text-gray-400">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                            </svg>
+                            {mod.duration_minutes} min
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-xs font-medium flex items-center gap-1" style={{ color: '#2563eb' }}>
+                        Start <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+                      </span>
                     </div>
                   </Link>
                 ))}

@@ -9,7 +9,7 @@ export default async function EditModulePage({ params }: { params: Promise<{ id:
 
   const { data: mod } = await supabase
     .from('academy_modules')
-    .select('id, section_id, title, description, content, published')
+    .select('id, section_id, title, description, content, published, difficulty, duration_minutes')
     .eq('id', id)
     .eq('trainer_id', user!.id)
     .single()
@@ -25,7 +25,13 @@ export default async function EditModulePage({ params }: { params: Promise<{ id:
       <ModuleForm
         moduleId={mod.id}
         sectionId={mod.section_id}
-        defaultValues={{ title: mod.title, description: mod.description ?? '', content: mod.content ?? '' }}
+        defaultValues={{
+          title: mod.title,
+          description: mod.description ?? '',
+          content: mod.content ?? '',
+          difficulty: mod.difficulty ?? 'Beginner',
+          durationMinutes: mod.duration_minutes ?? null,
+        }}
       />
     </div>
   )

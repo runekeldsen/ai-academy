@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 interface Props {
   sectionId: string
   moduleId?: string
-  defaultValues?: { title: string; description: string; content: string }
+  defaultValues?: { title: string; description: string; content: string; difficulty: string; durationMinutes: number | null }
 }
 
 export function ModuleForm({ sectionId, moduleId, defaultValues }: Props) {
@@ -18,6 +18,8 @@ export function ModuleForm({ sectionId, moduleId, defaultValues }: Props) {
   const [title, setTitle] = useState(defaultValues?.title ?? '')
   const [description, setDescription] = useState(defaultValues?.description ?? '')
   const [content, setContent] = useState(defaultValues?.content ?? '')
+  const [difficulty, setDifficulty] = useState(defaultValues?.difficulty ?? 'Beginner')
+  const [durationMinutes, setDurationMinutes] = useState<number | ''>(defaultValues?.durationMinutes ?? '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -26,9 +28,17 @@ export function ModuleForm({ sectionId, moduleId, defaultValues }: Props) {
     setLoading(true)
     setError('')
 
+    const payload = {
+      title,
+      description,
+      content,
+      difficulty,
+      durationMinutes: durationMinutes === '' ? null : Number(durationMinutes),
+    }
+
     const result = moduleId
-      ? await updateModule(moduleId, { title, description, content })
-      : await createModule({ sectionId, title, description, content })
+      ? await updateModule(moduleId, payload)
+      : await createModule({ sectionId, ...payload })
 
     if (result.error) {
       setError(result.error)
@@ -65,6 +75,35 @@ export function ModuleForm({ sectionId, moduleId, defaultValues }: Props) {
           onChange={e => setDescription(e.target.value)}
           placeholder="Shown on the card in the learner portal"
         />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="difficulty">Difficulty</Label>
+          <select
+            id="difficulty"
+            value={difficulty}
+            onChange={e => setDifficulty(e.target.value)}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="duration">Duration (minutes)</Label>
+          <Input
+            id="duration"
+            type="number"
+            min={1}
+            max={120}
+            value={durationMinutes}
+            onChange={e => setDurationMinutes(e.target.value === '' ? '' : Number(e.target.value))}
+            placeholder="e.g. 10"
+          />
+        </div>
       </div>
 
       <div className="space-y-1.5">
