@@ -26,7 +26,7 @@ export default async function LearnersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-heading text-2xl font-bold text-gray-900">Learners</h1>
-          <p className="mt-1 text-sm text-gray-500">Everyone you&apos;ve invited to the AI Academy.</p>
+          <p className="mt-1 text-sm text-gray-500">Everyone you&apos;ve invited to Rune's AI Academy.</p>
         </div>
         <a
           href="/trainer/invite"

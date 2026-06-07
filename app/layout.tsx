@@ -15,7 +15,7 @@ const plusJakarta = Plus_Jakarta_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "AI Academy",
+  title: "Rune's AI Academy",
   description: "Learn to work with AI — practical training for the modern professional.",
 }
 

@@ -29,7 +29,7 @@ export default async function TrainerDashboard() {
         <h1 className="font-heading text-2xl font-bold text-gray-900">
           Good to see you, {profile?.first_name ?? 'Trainer'}
         </h1>
-        <p className="mt-1 text-sm text-gray-500">Here&apos;s an overview of your AI Academy cohort.</p>
+        <p className="mt-1 text-sm text-gray-500">Here&apos;s an overview of your Rune's AI Academy cohort.</p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

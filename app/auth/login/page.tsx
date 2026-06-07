@@ -36,7 +36,7 @@ function LoginForm() {
     <div className="w-full max-w-md">
       <div className="mb-8">
         <h2 className="font-heading text-2xl font-bold text-gray-800">Welcome back</h2>
-        <p className="mt-1 text-sm text-gray-500">Sign in to your AI Academy account</p>
+        <p className="mt-1 text-sm text-gray-500">Sign in to Rune's AI Academy</p>
       </div>
       <form onSubmit={handleLogin} className="space-y-5">
         {passwordUpdated && (
@@ -91,7 +91,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex" style={{ backgroundColor: '#f8fafc' }}>
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 text-white" style={{ backgroundColor: '#0f172a' }}>
         <div>
-          <h1 className="font-heading text-3xl font-bold tracking-wide">AI Academy</h1>
+          <h1 className="font-heading text-3xl font-bold tracking-wide">Rune's AI Academy</h1>
           <p className="mt-2 text-sm" style={{ color: '#38bdf8' }}>Practical AI Training</p>
         </div>
         <div>
@@ -102,7 +102,7 @@ export default function LoginPage() {
             Hands-on AI training that turns curiosity<br />into capability.
           </p>
         </div>
-        <p className="text-xs text-white/30">AI Academy · Invite only</p>
+        <p className="text-xs text-white/30">Rune's AI Academy · Invite only</p>
       </div>
       <div className="flex-1 flex items-center justify-center p-8">
         <Suspense>

@@ -71,7 +71,7 @@ export function Sidebar({ items, title, user }: { items: NavItem[]; title: strin
           </svg>
         </button>
         <Link href="/" className="flex flex-col leading-none">
-          <span className="font-heading text-white font-bold text-base">AI Academy</span>
+          <span className="font-heading text-white font-bold text-base">Rune's AI Academy</span>
           <span className="text-[11px] mt-0.5" style={{ color: '#38bdf8' }}>{title}</span>
         </Link>
         {user && (
@@ -112,7 +112,7 @@ export function Sidebar({ items, title, user }: { items: NavItem[]; title: strin
         {/* Brand header */}
         <div className="px-5 py-6 border-b border-white/10 flex items-center justify-between">
           <Link href="/" className="block">
-            <span className="font-heading text-white font-bold text-lg tracking-wide">AI Academy</span>
+            <span className="font-heading text-white font-bold text-lg tracking-wide">Rune's AI Academy</span>
             <span className="block text-xs mt-0.5" style={{ color: '#38bdf8' }}>{title}</span>
           </Link>
           <button
