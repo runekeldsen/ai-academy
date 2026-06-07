@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { marked } from 'marked'
 
 export default async function ModulePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -24,6 +25,7 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
   if (!mod) notFound()
 
   const sectionTitle = (mod.academy_sections as unknown as { title: string } | null)?.title ?? ''
+  const html = await marked(mod.content ?? '', { breaks: true })
 
   return (
     <div className="max-w-3xl space-y-6">
@@ -48,9 +50,10 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 p-8">
-        <div className="prose prose-gray max-w-none text-gray-700 whitespace-pre-wrap leading-relaxed text-sm">
-          {mod.content}
-        </div>
+        <div
+          className="module-content"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
       </div>
 
       <div className="pt-2">
