@@ -83,6 +83,13 @@ export default async function LearnersPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-4">
+                        <a
+                          href={`/trainer/learners/${l.id}`}
+                          className="text-sm font-medium hover:underline"
+                          style={{ color: '#2563eb' }}
+                        >
+                          Progress
+                        </a>
                         <ResendInviteButton userId={l.id} origin={origin} />
                         <DeleteLearnerButton userId={l.id} />
                       </div>

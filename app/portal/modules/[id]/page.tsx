@@ -3,6 +3,8 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { marked } from 'marked'
 import { ModuleContent } from '@/components/portal/module-content'
+import { CompleteButton } from '@/components/portal/complete-button'
+import { trackModuleOpened } from '@/actions/progress'
 
 export default async function ModulePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -24,6 +26,17 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
     .single()
 
   if (!mod) notFound()
+
+  await trackModuleOpened(id)
+
+  const { data: progress } = await supabase
+    .from('academy_progress')
+    .select('completed_at')
+    .eq('learner_id', user!.id)
+    .eq('module_id', id)
+    .single()
+
+  const isCompleted = !!progress?.completed_at
 
   const sectionTitle = (mod.academy_sections as unknown as { title: string } | null)?.title ?? ''
 
@@ -65,7 +78,7 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
         <ModuleContent html={html} />
       </div>
 
-      <div className="pt-2">
+      <div className="flex items-center justify-between pt-2">
         <Link
           href="/portal"
           className="text-sm font-medium hover:underline flex items-center gap-1"
@@ -73,6 +86,7 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
         >
           ← Back to portal
         </Link>
+        <CompleteButton moduleId={id} initialCompleted={isCompleted} />
       </div>
     </div>
   )
