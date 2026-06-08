@@ -32,12 +32,15 @@ export async function POST(req: NextRequest) {
     .order('created_at', { ascending: true })
     .limit(20)
 
-  await supabase.from('academy_ai_messages').insert({
-    learner_id: user.id,
-    role: 'user',
-    content: message,
-    image_url: imageUrl ?? null,
-  })
+  await Promise.all([
+    supabase.from('academy_ai_messages').insert({
+      learner_id: user.id,
+      role: 'user',
+      content: message,
+      image_url: imageUrl ?? null,
+    }),
+    supabase.from('academy_profiles').update({ last_active_at: new Date().toISOString() }).eq('id', user.id),
+  ])
 
   type ContentPart =
     | { type: 'text'; text: string }

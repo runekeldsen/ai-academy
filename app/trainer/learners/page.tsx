@@ -3,7 +3,26 @@ import { ResendInviteButton } from '@/components/trainer/resend-invite-button'
 import { DeleteLearnerButton } from '@/components/trainer/delete-learner-button'
 import { headers } from 'next/headers'
 
-type Learner = { id: string; first_name: string; last_name: string; email: string; created_at: string }
+type Learner = {
+  id: string
+  first_name: string
+  last_name: string
+  email: string
+  created_at: string
+  last_active_at: string | null
+}
+
+function timeAgo(dt: string) {
+  const diff = Date.now() - new Date(dt).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'Just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.floor(hrs / 24)
+  if (days < 7) return `${days}d ago`
+  return new Date(dt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
+}
 
 export default async function LearnersPage() {
   const supabase = await createClient()
@@ -13,7 +32,7 @@ export default async function LearnersPage() {
 
   const { data: learners } = await supabase
     .from('academy_profiles')
-    .select('id, first_name, last_name, email, created_at')
+    .select('id, first_name, last_name, email, created_at, last_active_at')
     .eq('trainer_id', user!.id)
     .eq('role', 'learner')
     .order('created_at', { ascending: false })
@@ -52,6 +71,7 @@ export default async function LearnersPage() {
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Invited</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Last active</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
                 <th className="px-6 py-3" />
               </tr>
@@ -75,6 +95,15 @@ export default async function LearnersPage() {
                     <td className="px-6 py-4 text-gray-500">{l.email}</td>
                     <td className="px-6 py-4 text-gray-500">
                       {new Date(l.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </td>
+                    <td className="px-6 py-4">
+                      {l.last_active_at ? (
+                        <span className="text-gray-700" title={new Date(l.last_active_at).toLocaleString('en-GB')}>
+                          {timeAgo(l.last_active_at)}
+                        </span>
+                      ) : (
+                        <span className="text-gray-400">Never</span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center text-xs px-2 py-0.5 rounded-full font-medium ${confirmed ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>

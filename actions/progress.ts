@@ -8,10 +8,13 @@ export async function trackModuleOpened(moduleId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
 
-  await supabase.from('academy_progress').upsert(
-    { learner_id: user.id, module_id: moduleId },
-    { onConflict: 'learner_id,module_id', ignoreDuplicates: true }
-  )
+  await Promise.all([
+    supabase.from('academy_progress').upsert(
+      { learner_id: user.id, module_id: moduleId },
+      { onConflict: 'learner_id,module_id', ignoreDuplicates: true }
+    ),
+    supabase.from('academy_profiles').update({ last_active_at: new Date().toISOString() }).eq('id', user.id),
+  ])
 }
 
 export async function setModuleCompleted(moduleId: string, completed: boolean): Promise<{ error?: string }> {

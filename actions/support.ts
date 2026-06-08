@@ -69,9 +69,11 @@ export async function sendThreadMessage(
 
   if (error) return { error: error.message }
 
-  await supabase.from('academy_support_threads')
-    .update({ updated_at: new Date().toISOString() })
-    .eq('id', threadId)
+  const now = new Date().toISOString()
+  await supabase.from('academy_support_threads').update({ updated_at: now }).eq('id', threadId)
+  if (role === 'learner') {
+    await supabase.from('academy_profiles').update({ last_active_at: now }).eq('id', user.id)
+  }
 
   revalidatePath(`/portal/support/${threadId}`)
   revalidatePath(`/trainer/support/${threadId}`)
