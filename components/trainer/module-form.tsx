@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createModule, updateModule } from '@/actions/modules'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -22,6 +23,55 @@ export function ModuleForm({ sectionId, moduleId, defaultValues }: Props) {
   const [durationMinutes, setDurationMinutes] = useState<number | ''>(defaultValues?.durationMinutes ?? '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [uploading, setUploading] = useState(false)
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    const supabase = createClient()
+    const ext = file.name.split('.').pop()
+    const filename = `${crypto.randomUUID()}.${ext}`
+
+    const { error: uploadError } = await supabase.storage
+      .from('academy-images')
+      .upload(filename, file, { contentType: file.type })
+
+    if (uploadError) {
+      setError('Image upload failed: ' + uploadError.message)
+      setUploading(false)
+      e.target.value = ''
+      return
+    }
+
+    const { data: { publicUrl } } = supabase.storage.from('academy-images').getPublicUrl(filename)
+    const altText = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ')
+    const markdown = `![${altText}](${publicUrl})`
+
+    const textarea = textareaRef.current
+    if (textarea) {
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const before = content.slice(0, start)
+      const after = content.slice(end)
+      const inserted = (before.endsWith('\n') || before === '' ? '' : '\n') + markdown + '\n'
+      setContent(before + inserted + after)
+      setTimeout(() => {
+        const pos = start + inserted.length
+        textarea.selectionStart = textarea.selectionEnd = pos
+        textarea.focus()
+      }, 0)
+    } else {
+      setContent(prev => prev + '\n' + markdown + '\n')
+    }
+
+    setUploading(false)
+    e.target.value = ''
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -107,8 +157,33 @@ export function ModuleForm({ sectionId, moduleId, defaultValues }: Props) {
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="content">Content</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="content">Content</Label>
+          <div className="flex items-center gap-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded border border-gray-200 text-gray-500 hover:text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+              {uploading ? 'Uploading…' : 'Upload image'}
+            </button>
+            <span className="text-xs text-gray-400">Inserts at cursor</span>
+          </div>
+        </div>
         <textarea
+          ref={textareaRef}
           id="content"
           value={content}
           onChange={e => setContent(e.target.value)}

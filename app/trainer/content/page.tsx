@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { AddSectionForm } from '@/components/trainer/add-section-form'
-import { SectionCard } from '@/components/trainer/section-card'
+import { SortableSectionList } from '@/components/trainer/sortable-section-list'
 
-type Module = { id: string; title: string; description: string | null; published: boolean; created_at: string }
-type Section = { id: string; title: string; created_at: string; academy_modules: Module[] }
+type Module = { id: string; title: string; description: string | null; published: boolean; sort_order: number; created_at: string }
+type Section = { id: string; title: string; sort_order: number; created_at: string; academy_modules: Module[] }
+type Learner = { id: string; first_name: string; last_name: string }
 
 export default async function ContentPage() {
   const supabase = await createClient()
@@ -11,9 +12,31 @@ export default async function ContentPage() {
 
   const { data: sections } = await supabase
     .from('academy_sections')
-    .select('id, title, created_at, academy_modules(id, title, description, published, created_at)')
+    .select('id, title, sort_order, created_at, academy_modules(id, title, description, published, sort_order, created_at)')
     .eq('trainer_id', user!.id)
-    .order('created_at', { ascending: true })
+    .order('sort_order', { ascending: true })
+
+  const { data: learners } = await supabase
+    .from('academy_profiles')
+    .select('id, first_name, last_name')
+    .eq('trainer_id', user!.id)
+    .eq('role', 'learner')
+    .order('first_name', { ascending: true })
+
+  const { data: exclusions } = await supabase
+    .from('academy_module_exclusions')
+    .select('module_id, learner_id')
+
+  const exclusionMap: Record<string, string[]> = {}
+  for (const exc of (exclusions ?? [])) {
+    if (!exclusionMap[exc.module_id]) exclusionMap[exc.module_id] = []
+    exclusionMap[exc.module_id].push(exc.learner_id)
+  }
+
+  const sortedSections = ((sections as Section[]) ?? []).map(s => ({
+    ...s,
+    academy_modules: [...(s.academy_modules ?? [])].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)),
+  }))
 
   return (
     <div className="space-y-6">
@@ -24,11 +47,11 @@ export default async function ContentPage() {
         </div>
       </div>
 
-      <div className="space-y-4">
-        {(sections as Section[] ?? []).map(section => (
-          <SectionCard key={section.id} section={section} />
-        ))}
-      </div>
+      <SortableSectionList
+        sections={sortedSections}
+        learners={(learners as Learner[]) ?? []}
+        exclusionMap={exclusionMap}
+      />
 
       <AddSectionForm />
     </div>

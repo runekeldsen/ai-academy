@@ -121,3 +121,47 @@ export async function toggleModulePublished(id: string, published: boolean): Pro
   revalidatePath('/portal')
   return {}
 }
+
+export async function updateModuleOrder(updates: { id: string; sort_order: number }[]): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  for (const { id, sort_order } of updates) {
+    await supabase.from('academy_modules').update({ sort_order }).eq('id', id).eq('trainer_id', user.id)
+  }
+  revalidatePath('/trainer/content')
+  revalidatePath('/portal')
+  return {}
+}
+
+export async function updateSectionOrder(updates: { id: string; sort_order: number }[]): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  for (const { id, sort_order } of updates) {
+    await supabase.from('academy_sections').update({ sort_order }).eq('id', id).eq('trainer_id', user.id)
+  }
+  revalidatePath('/trainer/content')
+  revalidatePath('/portal')
+  return {}
+}
+
+export async function setModuleExclusions(moduleId: string, excludedLearnerIds: string[]): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  await supabase.from('academy_module_exclusions').delete().eq('module_id', moduleId)
+
+  if (excludedLearnerIds.length > 0) {
+    const rows = excludedLearnerIds.map(learner_id => ({ module_id: moduleId, learner_id, trainer_id: user.id }))
+    const { error } = await supabase.from('academy_module_exclusions').insert(rows)
+    if (error) return { error: error.message }
+  }
+
+  revalidatePath('/trainer/content')
+  revalidatePath('/portal')
+  return {}
+}

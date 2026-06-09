@@ -223,3 +223,12 @@
 .module-content tr:nth-child(even) td {
   background: #f8fafc;
 }
+.module-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin: 1.25rem 0;
+  display: block;
+  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06);
+}

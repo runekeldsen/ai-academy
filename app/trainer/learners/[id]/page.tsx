@@ -5,6 +5,14 @@ import { notFound } from 'next/navigation'
 type Progress = { module_id: string; started_at: string; completed_at: string | null }
 type Module = { id: string; title: string; published: boolean }
 type Section = { id: string; title: string; academy_modules: Module[] }
+type AnswerRecord = { questionId: string; answer: string; feedback: string; correct: boolean; score: number }
+type TestAttempt = {
+  id: string
+  completed_at: string | null
+  started_at: string
+  answers: AnswerRecord[]
+  academy_skill_tests: { title: string; description: string | null; academy_test_questions: { id: string }[] } | null
+}
 
 function fmt(dt: string) {
   return new Date(dt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
@@ -36,10 +44,19 @@ export default async function LearnerProgressPage({ params }: { params: Promise<
     .select('module_id, started_at, completed_at')
     .eq('learner_id', learnerId)
 
+  const { data: attempts } = await supabase
+    .from('academy_test_attempts')
+    .select('id, completed_at, started_at, answers, academy_skill_tests(title, description, academy_test_questions(id))')
+    .eq('learner_id', learnerId)
+    .not('completed_at', 'is', null)
+    .order('completed_at', { ascending: false })
+
   const progressMap = new Map<string, Progress>()
   for (const row of (progressRows ?? [])) {
     progressMap.set(row.module_id, row)
   }
+
+  const testAttempts = (attempts as unknown as TestAttempt[]) ?? []
 
   const allSections = ((sections as Section[]) ?? []).map(s => ({
     ...s,
@@ -77,7 +94,7 @@ export default async function LearnerProgressPage({ params }: { params: Promise<
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-gray-200 p-5 text-center">
           <div className="text-2xl font-bold text-gray-900">{totalModules}</div>
           <div className="text-xs text-gray-500 mt-0.5">Total modules</div>
@@ -89,6 +106,10 @@ export default async function LearnerProgressPage({ params }: { params: Promise<
         <div className="bg-white rounded-xl border border-gray-200 p-5 text-center">
           <div className="text-2xl font-bold text-green-600">{completedCount}</div>
           <div className="text-xs text-gray-500 mt-0.5">Completed</div>
+        </div>
+        <div className="bg-white rounded-xl border border-gray-200 p-5 text-center">
+          <div className="text-2xl font-bold text-purple-600">{testAttempts.length}</div>
+          <div className="text-xs text-gray-500 mt-0.5">Tests taken</div>
         </div>
       </div>
 
@@ -160,6 +181,76 @@ export default async function LearnerProgressPage({ params }: { params: Promise<
             )}
           </div>
         ))}
+      </div>
+
+      {/* Test results */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
+          <h2 className="font-heading font-semibold text-gray-800">Test results</h2>
+        </div>
+        {testAttempts.length === 0 ? (
+          <div className="px-6 py-6 text-sm text-gray-400">No tests taken yet.</div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-100">
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Test</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Score</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Result</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Questions</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Taken</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {testAttempts.map(attempt => {
+                const answers = attempt.answers ?? []
+                const score = answers.length > 0
+                  ? Math.round(answers.reduce((s, a) => s + (a.score ?? 0), 0) / answers.length)
+                  : 0
+                const passed = score >= 60
+                const total = attempt.academy_skill_tests?.academy_test_questions?.length ?? answers.length
+
+                return (
+                  <tr key={attempt.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 font-medium text-gray-800">
+                      {attempt.academy_skill_tests?.title ?? '—'}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 bg-gray-100 rounded-full h-1.5">
+                          <div
+                            className="h-1.5 rounded-full"
+                            style={{ width: `${score}%`, backgroundColor: passed ? '#16a34a' : '#f59e0b' }}
+                          />
+                        </div>
+                        <span className="font-semibold text-gray-800 tabular-nums">{score}%</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      {passed ? (
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-green-50 text-green-700 border border-green-200">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                          Passed
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-200">
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                          Not passed
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-gray-500">
+                      {answers.length} / {total}
+                    </td>
+                    <td className="px-6 py-4 text-gray-500">
+                      {attempt.completed_at ? fmt(attempt.completed_at) : '—'}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   )

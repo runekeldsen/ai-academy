@@ -23,14 +23,21 @@ export default async function LearnerPortal() {
 
   const { data: sections } = await supabase
     .from('academy_sections')
-    .select('id, title, academy_modules(id, title, description, difficulty, duration_minutes)')
+    .select('id, title, sort_order, academy_modules(id, title, description, difficulty, duration_minutes, sort_order)')
     .eq('trainer_id', profile?.trainer_id ?? '')
-    .order('created_at', { ascending: true })
+    .order('sort_order', { ascending: true })
 
   const { data: progressRows } = await supabase
     .from('academy_progress')
     .select('module_id, started_at, completed_at')
     .eq('learner_id', user!.id)
+
+  const { data: exclusions } = await supabase
+    .from('academy_module_exclusions')
+    .select('module_id')
+    .eq('learner_id', user!.id)
+
+  const excludedModuleIds = new Set((exclusions ?? []).map((e: { module_id: string }) => e.module_id))
 
   const progressMap = new Map<string, Progress>()
   for (const row of (progressRows ?? [])) {
@@ -38,7 +45,12 @@ export default async function LearnerPortal() {
   }
 
   const publishedSections = ((sections as Section[]) ?? [])
-    .map(s => ({ ...s, academy_modules: s.academy_modules ?? [] }))
+    .map(s => ({
+      ...s,
+      academy_modules: [...(s.academy_modules ?? [])]
+        .filter(m => !excludedModuleIds.has(m.id))
+        .sort((a, b) => ((a as { sort_order?: number }).sort_order ?? 0) - ((b as { sort_order?: number }).sort_order ?? 0)),
+    }))
     .filter(s => s.academy_modules.length > 0)
 
   return (

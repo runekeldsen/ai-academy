@@ -4,6 +4,8 @@ import { Sidebar } from '@/components/shared/sidebar'
 
 const navItems = [
   { label: 'Dashboard', href: '/portal' },
+  { label: 'Test your skills', href: '/portal/tests' },
+  { label: 'My projects', href: '/portal/projects' },
   { label: 'Support', href: '/portal/support' },
 ]
 
