@@ -37,7 +37,7 @@ export function Sidebar({ items, title, user }: { items: NavItem[]; title: strin
         {item.label}
         {showBadge && (
           <span
-            className="ml-auto text-xs font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center"
+            className="ml-auto text-[11px] font-bold min-w-[18px] h-[18px] px-1 rounded-full inline-flex items-center justify-center leading-none"
             style={{ backgroundColor: '#ef4444', color: 'white' }}
           >
             {item.badge! > 9 ? '9+' : item.badge}
