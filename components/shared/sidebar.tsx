@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 
-type NavItem = { label: string; href: string }
+type NavItem = { label: string; href: string; badge?: number }
 type UserInfo = { firstName: string; lastName: string; avatarUrl: string | null }
 
 export function Sidebar({ items, title, user }: { items: NavItem[]; title: string; user?: UserInfo }) {
@@ -22,6 +22,7 @@ export function Sidebar({ items, title, user }: { items: NavItem[]; title: strin
 
   const navLinks = items.map(item => {
     const isActive = pathname === item.href || (item.href !== '/trainer' && item.href !== '/portal' && pathname.startsWith(item.href))
+    const showBadge = !isActive && item.badge && item.badge > 0
     return (
       <Link
         key={item.href}
@@ -34,6 +35,14 @@ export function Sidebar({ items, title, user }: { items: NavItem[]; title: strin
         style={isActive ? { backgroundColor: '#2563eb' } : undefined}
       >
         {item.label}
+        {showBadge && (
+          <span
+            className="ml-auto text-xs font-bold min-w-[18px] h-[18px] px-1 rounded-full flex items-center justify-center"
+            style={{ backgroundColor: '#ef4444', color: 'white' }}
+          >
+            {item.badge! > 9 ? '9+' : item.badge}
+          </span>
+        )}
       </Link>
     )
   })

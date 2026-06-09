@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/shared/sidebar'
 
-const navItems = [
+const baseNavItems = [
   { label: 'Dashboard', href: '/portal' },
   { label: 'Test your skills', href: '/portal/tests' },
   { label: 'My projects', href: '/portal/projects' },
@@ -20,9 +20,53 @@ export default async function PortalLayout({ children }: { children: React.React
 
   const { data: profile } = await supabase
     .from('academy_profiles')
-    .select('first_name, last_name, avatar_url')
+    .select('first_name, last_name, avatar_url, trainer_id, projects_read_at, support_read_at, portal_read_at')
     .eq('id', user.id)
     .single()
+
+  // Notification counts — projects and support in parallel
+  const [{ count: projectsBadge }, { count: supportBadge }] = await Promise.all([
+    supabase
+      .from('academy_projects')
+      .select('id', { count: 'exact', head: true })
+      .eq('learner_id', user.id)
+      .not('trainer_responded_at', 'is', null)
+      .gt('trainer_responded_at', profile?.projects_read_at ?? '1970-01-01'),
+    supabase
+      .from('academy_support_threads')
+      .select('id', { count: 'exact', head: true })
+      .eq('learner_id', user.id)
+      .not('last_trainer_message_at', 'is', null)
+      .gt('last_trainer_message_at', profile?.support_read_at ?? '1970-01-01'),
+  ])
+
+  // New modules since last portal visit
+  let portalBadge = 0
+  if (profile?.trainer_id) {
+    const { data: sections } = await supabase
+      .from('academy_sections')
+      .select('id')
+      .eq('trainer_id', profile.trainer_id)
+    const ids = (sections ?? []).map((s: { id: string }) => s.id)
+    if (ids.length > 0) {
+      const { count } = await supabase
+        .from('academy_modules')
+        .select('id', { count: 'exact', head: true })
+        .in('section_id', ids)
+        .eq('published', true)
+        .gt('created_at', profile.portal_read_at ?? '1970-01-01')
+      portalBadge = count ?? 0
+    }
+  }
+
+  const navItems = baseNavItems.map(item => ({
+    ...item,
+    badge:
+      item.href === '/portal' ? (portalBadge || undefined)
+      : item.href === '/portal/projects' ? (projectsBadge || undefined)
+      : item.href === '/portal/support' ? (supportBadge || undefined)
+      : undefined,
+  }))
 
   return (
     <div className="flex min-h-screen">

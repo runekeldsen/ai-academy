@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import { MarkRead } from '@/components/portal/mark-read'
 
 type Module = { id: string; title: string; description: string | null; difficulty: string | null; duration_minutes: number | null }
 type Section = { id: string; title: string; academy_modules: Module[] }
@@ -55,6 +56,7 @@ export default async function LearnerPortal() {
 
   return (
     <div className="space-y-10">
+      <MarkRead section="portal" />
       <div>
         <h1 className="font-heading text-2xl font-bold text-gray-900">
           Welcome, {profile?.first_name ?? 'Learner'}

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { NewProjectButton } from '@/components/portal/new-project-button'
+import { MarkRead } from '@/components/portal/mark-read'
 
 type Project = {
   id: string
@@ -41,6 +42,7 @@ export default async function ProjectsPage() {
 
   return (
     <div className="space-y-6">
+      <MarkRead section="projects" />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-heading text-2xl font-bold text-gray-900">My projects</h1>

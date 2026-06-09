@@ -70,7 +70,9 @@ export async function sendThreadMessage(
   if (error) return { error: error.message }
 
   const now = new Date().toISOString()
-  await supabase.from('academy_support_threads').update({ updated_at: now }).eq('id', threadId)
+  const threadUpdate: Record<string, string> = { updated_at: now }
+  if (role === 'trainer') threadUpdate.last_trainer_message_at = now
+  await supabase.from('academy_support_threads').update(threadUpdate).eq('id', threadId)
   if (role === 'learner') {
     await supabase.from('academy_profiles').update({ last_active_at: now }).eq('id', user.id)
   }

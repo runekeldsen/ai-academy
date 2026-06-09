@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { AiChat } from '@/components/support/ai-chat'
 import { NewThreadForm } from '@/components/support/new-thread-form'
+import { MarkRead } from '@/components/portal/mark-read'
 
 type Thread = {
   id: string
@@ -50,6 +51,7 @@ export default async function SupportPage({
 
   return (
     <div className="space-y-6 max-w-3xl">
+      <MarkRead section="support" />
       <div>
         <h1 className="font-heading text-2xl font-bold text-gray-900">Support</h1>
         <p className="mt-1 text-sm text-gray-500">Get help from AI or ask your trainer directly.</p>
