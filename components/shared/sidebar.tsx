@@ -9,7 +9,7 @@ import { useState } from 'react'
 type NavItem = { label: string; href: string; badge?: number }
 type UserInfo = { firstName: string; lastName: string; avatarUrl: string | null }
 
-export function Sidebar({ items, title, user }: { items: NavItem[]; title: string; user?: UserInfo }) {
+export function Sidebar({ items, title, user, profileHref }: { items: NavItem[]; title: string; user?: UserInfo; profileHref?: string }) {
   const pathname = usePathname()
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -85,15 +85,23 @@ export function Sidebar({ items, title, user }: { items: NavItem[]; title: strin
         </Link>
         {user && (
           <div className="ml-auto">
-            <div className="w-8 h-8 rounded-full overflow-hidden" style={{ backgroundColor: '#2563eb' }}>
-              {user.avatarUrl ? (
-                <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-white text-xs font-bold">
-                  {initials}
-                </div>
-              )}
-            </div>
+            {profileHref ? (
+              <Link href={profileHref} className="block w-8 h-8 rounded-full overflow-hidden hover:ring-2 hover:ring-white/30 transition-all" style={{ backgroundColor: '#2563eb' }}>
+                {user.avatarUrl ? (
+                  <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white text-xs font-bold">{initials}</div>
+                )}
+              </Link>
+            ) : (
+              <div className="w-8 h-8 rounded-full overflow-hidden" style={{ backgroundColor: '#2563eb' }}>
+                {user.avatarUrl ? (
+                  <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white text-xs font-bold">{initials}</div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </header>
@@ -143,10 +151,20 @@ export function Sidebar({ items, title, user }: { items: NavItem[]; title: strin
         {/* User + Sign out */}
         <div className="px-3 py-4 border-t border-white/10 space-y-2">
           {user && (
-            <div className="flex items-center gap-3 px-3 py-2 rounded-md">
-              {Avatar}
-              <p className="text-sm text-white/70 truncate">{user.firstName} {user.lastName}</p>
-            </div>
+            profileHref ? (
+              <Link href={profileHref} className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/5 transition-colors group">
+                {Avatar}
+                <div className="min-w-0">
+                  <p className="text-sm text-white/70 group-hover:text-white/90 truncate transition-colors">{user.firstName} {user.lastName}</p>
+                  <p className="text-xs text-white/30 group-hover:text-white/50 transition-colors">Edit profile</p>
+                </div>
+              </Link>
+            ) : (
+              <div className="flex items-center gap-3 px-3 py-2 rounded-md">
+                {Avatar}
+                <p className="text-sm text-white/70 truncate">{user.firstName} {user.lastName}</p>
+              </div>
+            )
           )}
           <button
             onClick={signOut}

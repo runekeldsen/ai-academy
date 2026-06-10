@@ -74,6 +74,7 @@ export default async function PortalLayout({ children }: { children: React.React
         items={navItems}
         title="Learner Portal"
         user={profile ? { firstName: profile.first_name, lastName: profile.last_name, avatarUrl: profile.avatar_url } : undefined}
+        profileHref="/portal/profile"
       />
       <main className="flex-1 pt-14 md:pt-0 overflow-auto" style={{ backgroundColor: '#f8fafc' }}>
         <div className="p-4 md:p-8 lg:p-10 xl:p-12 w-full max-w-screen-2xl">{children}</div>
