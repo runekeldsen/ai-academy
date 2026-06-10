@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
-export async function createProject(title: string): Promise<{ id?: string; error?: string }> {
+export async function createProject(title: string, description = ''): Promise<{ id?: string; error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
@@ -16,7 +16,7 @@ export async function createProject(title: string): Promise<{ id?: string; error
 
   const { data, error } = await supabase
     .from('academy_projects')
-    .insert({ title, learner_id: user.id, trainer_id: profile?.trainer_id })
+    .insert({ title, description, learner_id: user.id, trainer_id: profile?.trainer_id })
     .select('id')
     .single()
 
