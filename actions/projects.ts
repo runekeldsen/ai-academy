@@ -73,6 +73,23 @@ export async function requestTrainerInput(id: string): Promise<{ error?: string 
   return {}
 }
 
+export async function setProjectShipped(id: string, shipped: boolean): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  const { error } = await supabase
+    .from('academy_projects')
+    .update({ shipped_at: shipped ? new Date().toISOString() : null, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('learner_id', user.id)
+
+  if (error) return { error: error.message }
+  revalidatePath('/portal/projects')
+  revalidatePath('/portal')
+  return {}
+}
+
 export async function deleteProject(id: string): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

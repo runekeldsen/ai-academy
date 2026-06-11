@@ -37,7 +37,7 @@ export async function getMotivation(
   learnerId: string,
   journey: Journey
 ): Promise<Motivation> {
-  const [{ data: attempts }, { count: projectCount }, { data: earnedRows }] = await Promise.all([
+  const [{ data: attempts }, { count: projectCount }, { count: shippedCount }, { data: earnedRows }] = await Promise.all([
     supabase
       .from('academy_test_attempts')
       .select('answers')
@@ -47,6 +47,11 @@ export async function getMotivation(
       .from('academy_projects')
       .select('id', { count: 'exact', head: true })
       .eq('learner_id', learnerId),
+    supabase
+      .from('academy_projects')
+      .select('id', { count: 'exact', head: true })
+      .eq('learner_id', learnerId)
+      .not('shipped_at', 'is', null),
     supabase
       .from('academy_achievements')
       .select('achievement_id, earned_at')
@@ -90,6 +95,7 @@ export async function getMotivation(
     { id: 'first-section', label: 'Section complete', hint: 'Complete every module in a section to earn this.', earned: sectionsCompleted >= 1 },
     { id: 'test-passed',   label: 'Test passed',      hint: 'Pass a skill test to earn this.',                 earned: testsPassed >= 1 },
     { id: 'first-project', label: 'First project',    hint: 'Create your first project to earn this.',         earned: projects >= 1 },
+    { id: 'project-shipped', label: 'Project shipped', hint: 'Mark a project as working to earn this.',        earned: (shippedCount ?? 0) >= 1 },
   ]
 
   // Persist newly earned achievements (earn-once — rows are never deleted)

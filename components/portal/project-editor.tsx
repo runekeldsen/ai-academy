@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { marked } from 'marked'
 import { saveProject, requestTrainerInput, deleteProject } from '@/actions/projects'
+import { ShipProjectButton } from '@/components/portal/ship-project-button'
 
 type Project = {
   id: string
@@ -16,6 +17,7 @@ type Project = {
   trainer_requested: boolean
   trainer_feedback: string
   trainer_responded_at: string | null
+  shipped_at: string | null
 }
 
 const complexityBar: Record<string, { color: string; bg: string }> = {
@@ -89,13 +91,23 @@ function TrainerFeedbackPanel({ feedback, respondedAt }: { feedback: string; res
   )
 }
 
-export function ProjectEditor({ project }: { project: Project }) {
+export function ProjectEditor({
+  project,
+  isFirstProject = false,
+  isFirstShip = false,
+}: {
+  project: Project
+  isFirstProject?: boolean
+  isFirstShip?: boolean
+}) {
   const router = useRouter()
   const [title, setTitle] = useState(project.title)
   const [description, setDescription] = useState(project.description)
   const [score, setScore] = useState(project.complexity_score)
   const [label, setLabel] = useState(project.complexity_label)
   const [reason, setReason] = useState('')
+  const [starterVersion, setStarterVersion] = useState('')
+  const [nudgeDismissed, setNudgeDismissed] = useState(false)
   const [guide, setGuide] = useState(project.ai_guide)
   const [warnings, setWarnings] = useState(project.ai_warnings)
   const [trainerRequested, setTrainerRequested] = useState(project.trainer_requested)
@@ -118,7 +130,10 @@ export function ProjectEditor({ project }: { project: Project }) {
         body: JSON.stringify({ title: t, description: d, mode: 'complexity' }),
       })
       const data = await res.json()
-      if (data.score) { setScore(data.score); setLabel(data.label); setReason(data.reason ?? '') }
+      if (data.score) {
+        setScore(data.score); setLabel(data.label); setReason(data.reason ?? '')
+        setStarterVersion(typeof data.starter_version === 'string' ? data.starter_version : '')
+      }
     } finally {
       setScoringLoading(false)
     }
@@ -243,6 +258,41 @@ export function ProjectEditor({ project }: { project: Project }) {
               <ComplexityMeter score={score} label={label} reason={reason} />
             </div>
 
+            {isFirstProject && score >= 6 && starterVersion && !nudgeDismissed && (
+              <div className="rounded-lg bg-blue-50 border border-blue-200 p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start gap-2.5">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 mt-0.5">
+                      <path d="M12 2v8"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="m8 6 4-4 4 4"/><path d="M16 18a4 4 0 0 0-8 0"/>
+                    </svg>
+                    <div>
+                      <p className="text-sm font-semibold text-blue-900">Great ambition!</p>
+                      <p className="mt-0.5 text-sm text-blue-900">
+                        For your first project, we suggest starting with a smaller version 1 — you can grow it later:
+                      </p>
+                    </div>
+                  </div>
+                  <button onClick={() => setNudgeDismissed(true)} className="text-blue-300 hover:text-blue-500 shrink-0" aria-label="Dismiss">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </button>
+                </div>
+                <p className="text-sm text-blue-800 bg-white/70 rounded-md px-3 py-2.5 border border-blue-100">{starterVersion}</p>
+                <button
+                  onClick={() => { setDescription(starterVersion); setStarterVersion('') }}
+                  className="px-3.5 py-2 rounded-lg text-xs font-semibold text-white hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: '#2563eb' }}
+                >
+                  Use this as my version 1
+                </button>
+              </div>
+            )}
+
+            {!isFirstProject && score >= 8 && !nudgeDismissed && (
+              <p className="text-xs text-blue-700 bg-blue-50 border border-blue-100 rounded-md px-3 py-2">
+                This is an ambitious one — consider slicing it into stages and shipping the first stage on its own.
+              </p>
+            )}
+
             <button
               onClick={handleGenerateGuide}
               disabled={!hasContent || analysisLoading}
@@ -300,6 +350,16 @@ export function ProjectEditor({ project }: { project: Project }) {
                 </button>
               )}
             </div>
+          )}
+
+          {/* Ship moment */}
+          {hasContent && (
+            <ShipProjectButton
+              projectId={project.id}
+              projectTitle={title}
+              initialShipped={!!project.shipped_at}
+              isFirstShip={isFirstShip}
+            />
           )}
         </div>
 

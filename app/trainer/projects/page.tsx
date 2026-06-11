@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { TrainerProjectFeedback } from '@/components/trainer/trainer-project-feedback'
+import { TemplateManager, type TemplateRow } from '@/components/trainer/template-manager'
 
 type Project = {
   id: string
@@ -34,11 +35,18 @@ export default async function TrainerProjectsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const { data: projects } = await supabase
-    .from('academy_projects')
-    .select('id, learner_id, title, description, complexity_score, complexity_label, ai_guide, ai_warnings, trainer_requested, trainer_feedback, trainer_responded_at, updated_at, academy_profiles!learner_id(first_name, last_name)')
-    .eq('trainer_id', user!.id)
-    .order('updated_at', { ascending: false })
+  const [{ data: projects }, { data: templates }] = await Promise.all([
+    supabase
+      .from('academy_projects')
+      .select('id, learner_id, title, description, complexity_score, complexity_label, ai_guide, ai_warnings, trainer_requested, trainer_feedback, trainer_responded_at, updated_at, academy_profiles!learner_id(first_name, last_name)')
+      .eq('trainer_id', user!.id)
+      .order('updated_at', { ascending: false }),
+    supabase
+      .from('academy_project_templates')
+      .select('id, title, description, complexity_score, complexity_label, category, recommended_first, sort_order')
+      .eq('trainer_id', user!.id)
+      .order('sort_order', { ascending: true }),
+  ])
 
   const all = (projects as unknown as Project[]) ?? []
 
@@ -111,6 +119,8 @@ export default async function TrainerProjectsPage() {
           })}
         </div>
       )}
+
+      <TemplateManager initialTemplates={(templates as TemplateRow[]) ?? []} />
     </div>
   )
 }

@@ -21,7 +21,10 @@ Key complexity drivers (each adds 2–3 points):
 - Output must be interactive (not just readable) → +2
 - Requires syncing data between systems → +2
 
-Return JSON only: { "score": <1-10>, "label": "<Beginner-friendly|Manageable|Challenging|Complex|Very Complex>", "reason": "<one sentence explaining the main complexity driver>" }`
+Return JSON only:
+{ "score": <1-10>, "label": "<Beginner-friendly|Manageable|Challenging|Complex|Very Complex>", "reason": "<one sentence explaining the main complexity driver>", "starter_version": <string or null> }
+
+For "starter_version": if and only if the score is 6 or higher, write a 2–3 sentence description of a much simpler version 1 of this EXACT idea — typically replacing live integrations with manual steps, documents instead of databases, or a downloadable file instead of hosting. Keep it concrete and in the learner's own terms, written as a project description they could use directly (not advice about the idea). It should score 3 or lower on this scale. If the score is below 6, return null.`
 
 const GUIDE_SYSTEM = `You are an expert Claude AI coach helping a learner implement a project idea using Claude.
 
