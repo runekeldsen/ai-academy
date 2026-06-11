@@ -152,7 +152,7 @@ export default async function ProjectsPage() {
         <div className="rounded-xl px-6 py-5 text-white" style={{ background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)' }}>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="font-heading text-lg font-bold">Start small. Get a real win. Then grow it.</p>
+              <p className="font-heading text-lg font-bold">Start small. Get a real win. <span className="whitespace-nowrap">Then grow it.</span></p>
               <p className="mt-1 text-sm" style={{ color: '#bfdbfe' }}>
                 The best first project is one you finish this week — not the biggest idea you have.
               </p>
