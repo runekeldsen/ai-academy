@@ -15,43 +15,55 @@ export function ModuleContent({
   initialCompletedSteps?: number[]
 }) {
   const ref = useRef<HTMLDivElement>(null)
-  const [checkedCount, setCheckedCount] = useState(initialCompletedSteps.length)
+  const [checkedSteps, setCheckedSteps] = useState<Set<number>>(() => new Set(initialCompletedSteps))
 
+  // Server actions make Next.js re-apply the page payload, which re-sets this
+  // component's innerHTML and wipes any classes or listeners added to it.
+  // So: clicks are delegated to the persistent wrapper div (below), and the
+  // checked state lives in React state and is re-stamped after every render.
   useEffect(() => {
-    if (!ref.current) return
+    const root = ref.current
+    if (!root) return
 
-    // Auto-size each textarea to fit its content
-    ref.current.querySelectorAll<HTMLTextAreaElement>('.prompt-textarea').forEach(textarea => {
+    root.querySelectorAll<HTMLButtonElement>('.step-check').forEach(btn => {
+      btn.classList.toggle('checked', checkedSteps.has(Number(btn.dataset.stepIndex)))
+    })
+
+    root.querySelectorAll<HTMLTextAreaElement>('.prompt-textarea').forEach(textarea => {
+      if (textarea.dataset.sized) return
+      textarea.dataset.sized = '1'
       textarea.style.height = 'auto'
       textarea.style.height = textarea.scrollHeight + 'px'
     })
+  })
 
-    // Wire up copy buttons
-    ref.current.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const textarea = btn.previousElementSibling as HTMLTextAreaElement | null
-        if (!textarea) return
-        navigator.clipboard.writeText(textarea.value).then(() => {
-          btn.textContent = 'Copied!'
-          setTimeout(() => { btn.textContent = 'Copy prompt' }, 2000)
-        })
-      })
-    })
+  function handleClick(e: React.MouseEvent) {
+    const target = e.target as HTMLElement
 
-    // Wire up step check buttons
-    const checked = new Set(initialCompletedSteps)
-    ref.current.querySelectorAll<HTMLButtonElement>('.step-check').forEach(btn => {
-      const idx = Number(btn.dataset.stepIndex)
-      if (checked.has(idx)) btn.classList.add('checked')
-      btn.addEventListener('click', () => {
-        const nowChecked = !btn.classList.contains('checked')
-        btn.classList.toggle('checked', nowChecked)
-        setCheckedCount(c => c + (nowChecked ? 1 : -1))
-        setStepChecked(moduleId, idx, nowChecked)
+    const copyBtn = target.closest<HTMLButtonElement>('.copy-btn')
+    if (copyBtn) {
+      const textarea = copyBtn.previousElementSibling as HTMLTextAreaElement | null
+      if (!textarea) return
+      navigator.clipboard.writeText(textarea.value).then(() => {
+        copyBtn.textContent = 'Copied!'
+        setTimeout(() => { copyBtn.textContent = 'Copy prompt' }, 2000)
       })
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [html])
+      return
+    }
+
+    const stepBtn = target.closest<HTMLButtonElement>('.step-check')
+    if (stepBtn) {
+      const idx = Number(stepBtn.dataset.stepIndex)
+      const nowChecked = !checkedSteps.has(idx)
+      const next = new Set(checkedSteps)
+      if (nowChecked) next.add(idx)
+      else next.delete(idx)
+      setCheckedSteps(next)
+      setStepChecked(moduleId, idx, nowChecked)
+    }
+  }
+
+  const checkedCount = checkedSteps.size
 
   return (
     <div>
@@ -71,6 +83,7 @@ export function ModuleContent({
       <div
         ref={ref}
         className="module-content"
+        onClick={handleClick}
         dangerouslySetInnerHTML={{ __html: html }}
       />
     </div>
