@@ -4,7 +4,7 @@ import { SortableSectionList } from '@/components/trainer/sortable-section-list'
 
 type Module = { id: string; title: string; description: string | null; published: boolean; sort_order: number; created_at: string }
 type Section = { id: string; title: string; sort_order: number; created_at: string; academy_modules: Module[] }
-type Learner = { id: string; first_name: string; last_name: string }
+type Learner = { id: string; first_name: string; last_name: string; team_id: string | null }
 
 export default async function ContentPage() {
   const supabase = await createClient()
@@ -18,10 +18,16 @@ export default async function ContentPage() {
 
   const { data: learners } = await supabase
     .from('academy_profiles')
-    .select('id, first_name, last_name')
+    .select('id, first_name, last_name, team_id')
     .eq('trainer_id', user!.id)
     .eq('role', 'learner')
     .order('first_name', { ascending: true })
+
+  const { data: teams } = await supabase
+    .from('academy_teams')
+    .select('id, name')
+    .eq('trainer_id', user!.id)
+    .order('name', { ascending: true })
 
   const { data: exclusions } = await supabase
     .from('academy_module_exclusions')
@@ -32,6 +38,13 @@ export default async function ContentPage() {
     if (!exclusionMap[exc.module_id]) exclusionMap[exc.module_id] = []
     exclusionMap[exc.module_id].push(exc.learner_id)
   }
+
+  const learnerList = (learners as Learner[]) ?? []
+  const teamList = ((teams ?? []) as { id: string; name: string }[]).map(t => ({
+    id: t.id,
+    name: t.name,
+    learnerIds: learnerList.filter(l => l.team_id === t.id).map(l => l.id),
+  }))
 
   const sortedSections = ((sections as Section[]) ?? []).map(s => ({
     ...s,
@@ -49,7 +62,8 @@ export default async function ContentPage() {
 
       <SortableSectionList
         sections={sortedSections}
-        learners={(learners as Learner[]) ?? []}
+        learners={learnerList.map(l => ({ id: l.id, first_name: l.first_name, last_name: l.last_name }))}
+        teams={teamList}
         exclusionMap={exclusionMap}
       />
 

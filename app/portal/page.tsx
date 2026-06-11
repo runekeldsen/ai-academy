@@ -1,10 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { MarkRead } from '@/components/portal/mark-read'
-
-type Module = { id: string; title: string; description: string | null; difficulty: string | null; duration_minutes: number | null }
-type Section = { id: string; title: string; academy_modules: Module[] }
-type Progress = { module_id: string; started_at: string; completed_at: string | null }
+import { WelcomeDialog } from '@/components/portal/welcome-dialog'
+import { ContinueHero } from '@/components/portal/continue-hero'
+import { SectionProgress } from '@/components/portal/section-progress'
+import { getJourney, getContinueModule, isPrereqUnmet, isNewModule } from '@/lib/journey'
+import { getMotivation } from '@/lib/achievements'
+import { GrowthCard } from '@/components/portal/achievement-badges'
 
 const difficultyStyle: Record<string, string> = {
   Beginner:     'bg-green-50 text-green-700 border-green-200',
@@ -18,45 +20,36 @@ export default async function LearnerPortal() {
 
   const { data: profile } = await supabase
     .from('academy_profiles')
-    .select('first_name, trainer_id')
+    .select('first_name, trainer_id, team_id, welcomed_at, academy_teams(name, welcome_message)')
     .eq('id', user!.id)
     .single()
 
-  const { data: sections } = await supabase
-    .from('academy_sections')
-    .select('id, title, sort_order, academy_modules(id, title, description, difficulty, duration_minutes, sort_order)')
-    .eq('trainer_id', profile?.trainer_id ?? '')
-    .order('sort_order', { ascending: true })
+  const teamRaw = profile?.academy_teams
+  const team = (Array.isArray(teamRaw) ? teamRaw[0] : teamRaw) as { name: string; welcome_message: string } | null ?? null
 
-  const { data: progressRows } = await supabase
-    .from('academy_progress')
-    .select('module_id, started_at, completed_at')
-    .eq('learner_id', user!.id)
+  const journey = await getJourney(supabase, user!.id, {
+    trainerId: profile?.trainer_id ?? null,
+    teamId: profile?.team_id ?? null,
+  })
 
-  const { data: exclusions } = await supabase
-    .from('academy_module_exclusions')
-    .select('module_id')
-    .eq('learner_id', user!.id)
+  const motivation = await getMotivation(supabase, user!.id, journey)
 
-  const excludedModuleIds = new Set((exclusions ?? []).map((e: { module_id: string }) => e.module_id))
+  const totalModules = journey.orderedModules.length
+  const totalCompleted = journey.orderedModules.filter(m => journey.progressMap.get(m.id)?.completed_at).length
+  const continueModule = getContinueModule(journey)
 
-  const progressMap = new Map<string, Progress>()
-  for (const row of (progressRows ?? [])) {
-    progressMap.set(row.module_id, row)
-  }
-
-  const publishedSections = ((sections as Section[]) ?? [])
-    .map(s => ({
-      ...s,
-      academy_modules: [...(s.academy_modules ?? [])]
-        .filter(m => !excludedModuleIds.has(m.id))
-        .sort((a, b) => ((a as { sort_order?: number }).sort_order ?? 0) - ((b as { sort_order?: number }).sort_order ?? 0)),
-    }))
-    .filter(s => s.academy_modules.length > 0)
+  const showWelcome = !profile?.welcomed_at
 
   return (
     <div className="space-y-10">
       <MarkRead section="portal" />
+      {showWelcome && (
+        <WelcomeDialog
+          firstName={profile?.first_name ?? 'there'}
+          teamName={team?.name}
+          teamWelcomeMessage={team?.welcome_message}
+        />
+      )}
       <div>
         <h1 className="font-heading text-2xl font-bold text-gray-900">
           Welcome, {profile?.first_name ?? 'Learner'}
@@ -64,7 +57,22 @@ export default async function LearnerPortal() {
         <p className="mt-1 text-sm text-gray-500">Your AI Academy training programme.</p>
       </div>
 
-      {publishedSections.length === 0 ? (
+      {team?.welcome_message && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl px-5 py-4 text-sm text-blue-800 whitespace-pre-line">
+          {team.welcome_message}
+        </div>
+      )}
+
+      <ContinueHero
+        module={continueModule}
+        completed={totalCompleted}
+        total={totalModules}
+        isNew={continueModule ? isNewModule(journey, continueModule) : false}
+      />
+
+      {totalModules > 0 && <GrowthCard motivation={motivation} />}
+
+      {journey.sections.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-10 text-center space-y-3">
           <div
             className="w-14 h-14 rounded-full flex items-center justify-center mx-auto"
@@ -82,20 +90,42 @@ export default async function LearnerPortal() {
         </div>
       ) : (
         <div className="space-y-8">
-          {publishedSections.map(section => {
-            const total = section.academy_modules.length
-            const completed = section.academy_modules.filter(m => progressMap.get(m.id)?.completed_at).length
+          {journey.sections.map(section => {
+            const total = section.modules.length
+            const completed = section.modules.filter(m => journey.progressMap.get(m.id)?.completed_at).length
+            const sectionDone = motivation.trophiedSectionIds.has(section.id)
+            const newCount = section.modules.filter(m => isNewModule(journey, m)).length
             return (
               <div key={section.id} className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-heading text-lg font-semibold text-gray-800">{section.title}</h2>
-                  <span className="text-xs text-gray-400">{completed}/{total} completed</span>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <h2 className="font-heading text-lg font-semibold text-gray-800">{section.title}</h2>
+                    {sectionDone && (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/>
+                          <path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+                          <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+                          <path d="M18 2H6v7a6 6 0 0012 0V2z"/>
+                        </svg>
+                        Section complete
+                      </span>
+                    )}
+                    {newCount > 0 && (
+                      <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
+                        {newCount} new {newCount === 1 ? 'module' : 'modules'} ✨
+                      </span>
+                    )}
+                  </div>
+                  <SectionProgress completed={completed} total={total} />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {section.academy_modules.map(mod => {
-                    const p = progressMap.get(mod.id)
+                  {section.modules.map(mod => {
+                    const p = journey.progressMap.get(mod.id)
                     const isCompleted = !!p?.completed_at
                     const isStarted = !!p?.started_at && !isCompleted
+                    const isNew = isNewModule(journey, mod)
+                    const unmetPrereq = isPrereqUnmet(journey, mod)
 
                     return (
                       <Link
@@ -126,16 +156,23 @@ export default async function LearnerPortal() {
                               </svg>
                             )}
                           </div>
-                          {isCompleted && (
-                            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200">
-                              Completed
-                            </span>
-                          )}
-                          {isStarted && (
-                            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
-                              In progress
-                            </span>
-                          )}
+                          <div className="flex items-center gap-1.5">
+                            {isNew && (
+                              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
+                                New ✨
+                              </span>
+                            )}
+                            {isCompleted && (
+                              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-200">
+                                Completed
+                              </span>
+                            )}
+                            {isStarted && (
+                              <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
+                                In progress
+                              </span>
+                            )}
+                          </div>
                         </div>
 
                         <div className="flex-1">
@@ -146,6 +183,14 @@ export default async function LearnerPortal() {
                           </h3>
                           {mod.description && (
                             <p className="mt-1 text-sm text-gray-500 line-clamp-2">{mod.description}</p>
+                          )}
+                          {unmetPrereq && !isCompleted && (
+                            <p className="mt-1.5 text-xs text-amber-600 flex items-center gap-1">
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                              </svg>
+                              Builds on: {unmetPrereq.title}
+                            </p>
                           )}
                         </div>
 

@@ -46,6 +46,7 @@ export async function createModule(data: {
   content: string
   difficulty: string
   durationMinutes: number | null
+  prerequisiteModuleId?: string | null
 }): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -59,6 +60,7 @@ export async function createModule(data: {
     content: data.content,
     difficulty: data.difficulty || null,
     duration_minutes: data.durationMinutes,
+    prerequisite_module_id: data.prerequisiteModuleId ?? null,
     published: false,
   })
   if (error) return { error: error.message }
@@ -73,6 +75,7 @@ export async function updateModule(id: string, data: {
   content: string
   difficulty: string
   durationMinutes: number | null
+  prerequisiteModuleId?: string | null
 }): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -85,6 +88,7 @@ export async function updateModule(id: string, data: {
       content: data.content,
       difficulty: data.difficulty || null,
       duration_minutes: data.durationMinutes,
+      prerequisite_module_id: data.prerequisiteModuleId ?? null,
     })
     .eq('id', id)
     .eq('trainer_id', user.id)

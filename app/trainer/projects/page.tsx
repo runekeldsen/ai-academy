@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
 import { TrainerProjectFeedback } from '@/components/trainer/trainer-project-feedback'
 
 type Project = {
   id: string
+  learner_id: string
   title: string
   description: string
   complexity_score: number
@@ -34,49 +36,79 @@ export default async function TrainerProjectsPage() {
 
   const { data: projects } = await supabase
     .from('academy_projects')
-    .select('id, title, description, complexity_score, complexity_label, ai_guide, ai_warnings, trainer_requested, trainer_feedback, trainer_responded_at, updated_at, academy_profiles!learner_id(first_name, last_name)')
+    .select('id, learner_id, title, description, complexity_score, complexity_label, ai_guide, ai_warnings, trainer_requested, trainer_feedback, trainer_responded_at, updated_at, academy_profiles!learner_id(first_name, last_name)')
     .eq('trainer_id', user!.id)
     .order('updated_at', { ascending: false })
 
   const all = (projects as unknown as Project[]) ?? []
-  const requesting = all.filter(p => p.trainer_requested && !p.trainer_feedback)
-  const rest = all.filter(p => !p.trainer_requested || !!p.trainer_feedback)
+
+  // Group by learner
+  const learnerMap = new Map<string, { name: string; projects: Project[] }>()
+  for (const p of all) {
+    if (!learnerMap.has(p.learner_id)) {
+      learnerMap.set(p.learner_id, {
+        name: p.academy_profiles ? `${p.academy_profiles.first_name} ${p.academy_profiles.last_name}` : 'Unknown',
+        projects: [],
+      })
+    }
+    learnerMap.get(p.learner_id)!.projects.push(p)
+  }
+
+  const awaitingCount = all.filter(p => p.trainer_requested && !p.trainer_feedback).length
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-heading text-2xl font-bold text-gray-900">Learner projects</h1>
-        <p className="mt-1 text-sm text-gray-500">Review project ideas and respond to learners who have asked for your input.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-heading text-2xl font-bold text-gray-900">Learner projects</h1>
+          <p className="mt-1 text-sm text-gray-500">Review project ideas and respond to learners who have asked for your input.</p>
+        </div>
+        {awaitingCount > 0 && (
+          <span className="inline-flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+            <span className="w-4 h-4 rounded-full text-xs font-bold text-white flex items-center justify-center" style={{ backgroundColor: '#d97706' }}>{awaitingCount}</span>
+            awaiting input
+          </span>
+        )}
       </div>
 
-      {requesting.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="font-heading text-base font-semibold text-gray-700 flex items-center gap-2">
-            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold text-white" style={{ backgroundColor: '#d97706' }}>{requesting.length}</span>
-            Awaiting your input
-          </h2>
-          <div className="space-y-4">
-            {requesting.map(p => (
-              <ProjectCard key={p.id} project={p} showFeedbackForm />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {rest.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="font-heading text-base font-semibold text-gray-700">All projects</h2>
-          <div className="space-y-4">
-            {rest.map(p => (
-              <ProjectCard key={p.id} project={p} showFeedbackForm={false} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {all.length === 0 && (
+      {all.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-10 text-center">
           <p className="text-sm text-gray-500">No learner projects yet.</p>
+        </div>
+      ) : (
+        <div className="space-y-10">
+          {Array.from(learnerMap.entries()).map(([learnerId, { name, projects: lps }]) => {
+            const pendingCount = lps.filter(p => p.trainer_requested && !p.trainer_feedback).length
+            return (
+              <div key={learnerId} className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                    style={{ backgroundColor: '#2563eb' }}
+                  >
+                    {name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                  </div>
+                  <Link
+                    href={`/trainer/learners/${learnerId}`}
+                    className="font-heading font-semibold text-gray-900 hover:underline"
+                  >
+                    {name}
+                  </Link>
+                  {pendingCount > 0 && (
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                      {pendingCount} awaiting input
+                    </span>
+                  )}
+                  <span className="text-xs text-gray-400">{lps.length} project{lps.length !== 1 ? 's' : ''}</span>
+                </div>
+                <div className="space-y-3 pl-11">
+                  {lps.map(p => (
+                    <ProjectCard key={p.id} project={p} showFeedbackForm={p.trainer_requested && !p.trainer_feedback} />
+                  ))}
+                </div>
+              </div>
+            )
+          })}
         </div>
       )}
     </div>
@@ -84,13 +116,12 @@ export default async function TrainerProjectsPage() {
 }
 
 function ProjectCard({ project, showFeedbackForm }: { project: Project; showFeedbackForm: boolean }) {
-  const learner = project.academy_profiles
   return (
     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between gap-4">
         <div>
           <p className="font-heading font-semibold text-gray-800">{project.title}</p>
-          {learner && <p className="text-xs text-gray-500 mt-0.5">{learner.first_name} {learner.last_name} · {fmt(project.updated_at)}</p>}
+          <p className="text-xs text-gray-500 mt-0.5">{fmt(project.updated_at)}</p>
         </div>
         {project.complexity_label && (
           <span className={`text-xs font-medium px-2 py-0.5 rounded-full border shrink-0 ${complexityColor[project.complexity_label] ?? ''}`}>

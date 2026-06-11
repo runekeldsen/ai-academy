@@ -183,6 +183,37 @@
 .module-content .copy-btn:hover {
   background: #1d4ed8;
 }
+.module-content h2.step-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.module-content .step-check {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #cbd5e1;
+  border-radius: 9999px;
+  background: #fff;
+  color: transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.module-content .step-check:hover {
+  border-color: #2563eb;
+  color: #bfdbfe;
+}
+.module-content .step-check.checked {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: #fff;
+}
+.module-content h2.step-heading:has(.step-check.checked) span {
+  color: #6b7280;
+}
 .module-content blockquote {
   border-left: 3px solid #2563eb;
   background: #eff6ff;

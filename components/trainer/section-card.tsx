@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input'
 type Module = { id: string; title: string; description: string | null; published: boolean; sort_order: number; created_at: string }
 type Section = { id: string; title: string; sort_order: number; created_at: string; academy_modules: Module[] }
 type Learner = { id: string; first_name: string; last_name: string }
+type Team = { id: string; name: string; learnerIds: string[] }
 
 const GripIcon = ({ size = 14 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
@@ -31,10 +32,11 @@ const GripIcon = ({ size = 14 }: { size?: number }) => (
 )
 
 export function SectionCard({
-  section, learners, exclusionMap,
+  section, learners, teams, exclusionMap,
 }: {
   section: Section
   learners: Learner[]
+  teams: Team[]
   exclusionMap: Record<string, string[]>
 }) {
   const [editing, setEditing] = useState(false)
@@ -112,6 +114,7 @@ export function SectionCard({
                   key={mod.id}
                   module={mod}
                   learners={learners}
+                  teams={teams}
                   excludedLearnerIds={exclusionMap[mod.id] ?? []}
                 />
               ))}
@@ -133,11 +136,38 @@ export function SectionCard({
   )
 }
 
+function TeamCheckbox({ team, excluded, onChange }: {
+  team: Team
+  excluded: Set<string>
+  onChange: (ids: string[], checked: boolean) => void
+}) {
+  const membersWithAccess = team.learnerIds.filter(id => !excluded.has(id))
+  const allVisible = team.learnerIds.length > 0 && membersWithAccess.length === team.learnerIds.length
+  const someVisible = membersWithAccess.length > 0 && !allVisible
+  const ref = (el: HTMLInputElement | null) => {
+    if (el) el.indeterminate = someVisible
+  }
+  return (
+    <label className="flex items-center gap-2 cursor-pointer select-none">
+      <input
+        type="checkbox"
+        ref={ref}
+        checked={allVisible}
+        onChange={e => onChange(team.learnerIds, e.target.checked)}
+        className="rounded border-gray-300"
+      />
+      <span className="text-sm font-medium text-gray-700">{team.name}</span>
+      <span className="text-xs text-gray-400">({membersWithAccess.length}/{team.learnerIds.length})</span>
+    </label>
+  )
+}
+
 function ModuleRow({
-  module, learners, excludedLearnerIds,
+  module, learners, teams, excludedLearnerIds,
 }: {
   module: Module
   learners: Learner[]
+  teams: Team[]
   excludedLearnerIds: string[]
 }) {
   const [published, setPublished] = useState(module.published)
@@ -174,13 +204,23 @@ function ModuleRow({
   function toggleLearner(learnerId: string) {
     setExcluded(prev => {
       const next = new Set(prev)
-      if (next.has(learnerId)) next.delete(learnerId)
-      else next.add(learnerId)
+      if (next.has(learnerId)) next.delete(learnerId); else next.add(learnerId)
+      return next
+    })
+  }
+
+  function toggleTeam(learnerIds: string[], checked: boolean) {
+    setExcluded(prev => {
+      const next = new Set(prev)
+      for (const id of learnerIds) {
+        if (checked) next.delete(id); else next.add(id)
+      }
       return next
     })
   }
 
   const hiddenCount = excluded.size
+  const unassignedLearners = learners.filter(l => !teams.some(t => t.learnerIds.includes(l.id)))
 
   return (
     <li ref={setNodeRef} style={style}>
@@ -239,24 +279,40 @@ function ModuleRow({
       </div>
 
       {showVisibility && learners.length > 0 && (
-        <div className="mx-5 mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-          <p className="text-xs font-medium text-gray-600 mb-2">
+        <div className="mx-5 mb-3 p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+          <p className="text-xs font-medium text-gray-600">
             Show this module to: <span className="text-gray-400 font-normal">(uncheck to hide)</span>
           </p>
-          <div className="space-y-1.5">
-            {learners.map(learner => (
-              <label key={learner.id} className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={!excluded.has(learner.id)}
-                  onChange={() => toggleLearner(learner.id)}
-                  className="rounded border-gray-300"
-                />
-                <span className="text-sm text-gray-700">{learner.first_name} {learner.last_name}</span>
-              </label>
-            ))}
-          </div>
-          <div className="flex gap-2 mt-3">
+
+          {teams.length > 0 && (
+            <div className="space-y-1.5">
+              <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">Teams</p>
+              {teams.map(team => (
+                <TeamCheckbox key={team.id} team={team} excluded={excluded} onChange={toggleTeam} />
+              ))}
+            </div>
+          )}
+
+          {(unassignedLearners.length > 0 || teams.length === 0) && (
+            <div className="space-y-1.5">
+              {teams.length > 0 && (
+                <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">No team</p>
+              )}
+              {(teams.length === 0 ? learners : unassignedLearners).map(learner => (
+                <label key={learner.id} className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={!excluded.has(learner.id)}
+                    onChange={() => toggleLearner(learner.id)}
+                    className="rounded border-gray-300"
+                  />
+                  <span className="text-sm text-gray-700">{learner.first_name} {learner.last_name}</span>
+                </label>
+              ))}
+            </div>
+          )}
+
+          <div className="flex gap-2 pt-1">
             <button
               onClick={handleVisibilitySave}
               disabled={savingVisibility}

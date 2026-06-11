@@ -15,14 +15,17 @@ import { updateSectionOrder } from '@/actions/modules'
 type Module = { id: string; title: string; description: string | null; published: boolean; sort_order: number; created_at: string }
 type Section = { id: string; title: string; sort_order: number; created_at: string; academy_modules: Module[] }
 type Learner = { id: string; first_name: string; last_name: string }
+type Team = { id: string; name: string; learnerIds: string[] }
 
 export function SortableSectionList({
   sections: initialSections,
   learners,
+  teams,
   exclusionMap,
 }: {
   sections: Section[]
   learners: Learner[]
+  teams: Team[]
   exclusionMap: Record<string, string[]>
 }) {
   const [sections, setSections] = useState(initialSections)
@@ -52,6 +55,7 @@ export function SortableSectionList({
               key={section.id}
               section={section}
               learners={learners}
+              teams={teams}
               exclusionMap={exclusionMap}
             />
           ))}

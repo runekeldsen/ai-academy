@@ -11,16 +11,18 @@ import { Label } from '@/components/ui/label'
 interface Props {
   sectionId: string
   moduleId?: string
-  defaultValues?: { title: string; description: string; content: string; difficulty: string; durationMinutes: number | null }
+  moduleOptions?: { id: string; title: string }[]
+  defaultValues?: { title: string; description: string; content: string; difficulty: string; durationMinutes: number | null; prerequisiteModuleId?: string | null }
 }
 
-export function ModuleForm({ sectionId, moduleId, defaultValues }: Props) {
+export function ModuleForm({ sectionId, moduleId, moduleOptions = [], defaultValues }: Props) {
   const router = useRouter()
   const [title, setTitle] = useState(defaultValues?.title ?? '')
   const [description, setDescription] = useState(defaultValues?.description ?? '')
   const [content, setContent] = useState(defaultValues?.content ?? '')
   const [difficulty, setDifficulty] = useState(defaultValues?.difficulty ?? 'Beginner')
   const [durationMinutes, setDurationMinutes] = useState<number | ''>(defaultValues?.durationMinutes ?? '')
+  const [prerequisiteModuleId, setPrerequisiteModuleId] = useState(defaultValues?.prerequisiteModuleId ?? '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [uploading, setUploading] = useState(false)
@@ -84,6 +86,7 @@ export function ModuleForm({ sectionId, moduleId, defaultValues }: Props) {
       content,
       difficulty,
       durationMinutes: durationMinutes === '' ? null : Number(durationMinutes),
+      prerequisiteModuleId: prerequisiteModuleId || null,
     }
 
     const result = moduleId
@@ -155,6 +158,26 @@ export function ModuleForm({ sectionId, moduleId, defaultValues }: Props) {
           />
         </div>
       </div>
+
+      {moduleOptions.length > 0 && (
+        <div className="space-y-1.5">
+          <Label htmlFor="prerequisite">Prerequisite (optional)</Label>
+          <select
+            id="prerequisite"
+            value={prerequisiteModuleId}
+            onChange={e => setPrerequisiteModuleId(e.target.value)}
+            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <option value="">None</option>
+            {moduleOptions.map(m => (
+              <option key={m.id} value={m.id}>{m.title}</option>
+            ))}
+          </select>
+          <p className="text-xs text-gray-400">
+            Learners get a friendly recommendation to complete this module first — it never blocks them.
+          </p>
+        </div>
+      )}
 
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">

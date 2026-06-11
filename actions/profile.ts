@@ -19,6 +19,13 @@ export async function updateProfile(firstName: string, lastName: string): Promis
   return {}
 }
 
+export async function markWelcomeSeen(): Promise<void> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  await supabase.from('academy_profiles').update({ welcomed_at: new Date().toISOString() }).eq('id', user.id)
+}
+
 export async function updatePassword(currentPassword: string, newPassword: string): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { ResendInviteButton } from '@/components/trainer/resend-invite-button'
 import { DeleteLearnerButton } from '@/components/trainer/delete-learner-button'
+import { LearnerTeamSelect } from '@/components/trainer/learner-team-select'
 import { headers } from 'next/headers'
 
 type Learner = {
@@ -10,6 +11,7 @@ type Learner = {
   email: string
   created_at: string
   last_active_at: string | null
+  team_id: string | null
 }
 
 function timeAgo(dt: string) {
@@ -32,10 +34,16 @@ export default async function LearnersPage() {
 
   const { data: learners } = await supabase
     .from('academy_profiles')
-    .select('id, first_name, last_name, email, created_at, last_active_at')
+    .select('id, first_name, last_name, email, created_at, last_active_at, team_id')
     .eq('trainer_id', user!.id)
     .eq('role', 'learner')
     .order('created_at', { ascending: false })
+
+  const { data: teams } = await supabase
+    .from('academy_teams')
+    .select('id, name')
+    .eq('trainer_id', user!.id)
+    .order('name', { ascending: true })
 
   const { data: authStatus } = await supabase
     .rpc('get_user_auth_status', { user_ids: (learners ?? []).map((l: Learner) => l.id) })
@@ -70,6 +78,7 @@ export default async function LearnersPage() {
               <tr className="border-b border-gray-100 bg-gray-50">
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Team</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Invited</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Last active</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Status</th>
@@ -93,6 +102,13 @@ export default async function LearnersPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-gray-500">{l.email}</td>
+                    <td className="px-6 py-4">
+                      <LearnerTeamSelect
+                        learnerId={l.id}
+                        currentTeamId={l.team_id}
+                        teams={teams ?? []}
+                      />
+                    </td>
                     <td className="px-6 py-4 text-gray-500">
                       {new Date(l.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
                     </td>

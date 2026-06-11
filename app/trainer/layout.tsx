@@ -5,9 +5,11 @@ import { Sidebar } from '@/components/shared/sidebar'
 const navItems = [
   { label: 'Dashboard', href: '/trainer' },
   { label: 'Learners', href: '/trainer/learners' },
+  { label: 'Teams', href: '/trainer/teams' },
   { label: 'Content', href: '/trainer/content' },
   { label: 'Tests', href: '/trainer/tests' },
   { label: 'Projects', href: '/trainer/projects' },
+  { label: 'Resources', href: '/trainer/resources' },
   { label: 'Support', href: '/trainer/support' },
   { label: 'Invite', href: '/trainer/invite' },
 ]

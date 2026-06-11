@@ -9,12 +9,19 @@ export default async function EditModulePage({ params }: { params: Promise<{ id:
 
   const { data: mod } = await supabase
     .from('academy_modules')
-    .select('id, section_id, title, description, content, published, difficulty, duration_minutes')
+    .select('id, section_id, title, description, content, published, difficulty, duration_minutes, prerequisite_module_id')
     .eq('id', id)
     .eq('trainer_id', user!.id)
     .single()
 
   if (!mod) notFound()
+
+  const { data: moduleOptions } = await supabase
+    .from('academy_modules')
+    .select('id, title')
+    .eq('trainer_id', user!.id)
+    .neq('id', id)
+    .order('title', { ascending: true })
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -25,12 +32,14 @@ export default async function EditModulePage({ params }: { params: Promise<{ id:
       <ModuleForm
         moduleId={mod.id}
         sectionId={mod.section_id}
+        moduleOptions={moduleOptions ?? []}
         defaultValues={{
           title: mod.title,
           description: mod.description ?? '',
           content: mod.content ?? '',
           difficulty: mod.difficulty ?? 'Beginner',
           durationMinutes: mod.duration_minutes ?? null,
+          prerequisiteModuleId: mod.prerequisite_module_id ?? null,
         }}
       />
     </div>
