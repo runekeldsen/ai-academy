@@ -5,6 +5,7 @@ import { marked, type Tokens } from 'marked'
 import { ModuleContent } from '@/components/portal/module-content'
 import { CompleteButton } from '@/components/portal/complete-button'
 import { ModulePager } from '@/components/portal/module-pager'
+import { UseTemplateButton } from '@/components/portal/use-template-button'
 import { trackModuleOpened } from '@/actions/progress'
 import { getJourney, getNextModule, getPrevModule, isPrereqUnmet } from '@/lib/journey'
 
@@ -32,6 +33,14 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
   if (!mod) notFound()
 
   await trackModuleOpened(id)
+
+  const { data: linkedTemplate } = await supabase
+    .from('academy_project_templates')
+    .select('title, description')
+    .eq('trainer_id', profile?.trainer_id ?? '')
+    .eq('module_id', id)
+    .limit(1)
+    .maybeSingle()
 
   const journey = await getJourney(supabase, user!.id, {
     trainerId: profile?.trainer_id ?? null,
@@ -126,6 +135,20 @@ export default async function ModulePage({ params }: { params: Promise<{ id: str
           nextModule={next ? { id: next.id, title: next.title } : null}
         />
       </div>
+
+      {linkedTemplate && (
+        <div className="rounded-xl border-2 border-blue-200 bg-blue-50/50 p-6 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex-1">
+            <h2 className="font-heading text-lg font-semibold text-gray-900">Ready to build your own?</h2>
+            <p className="mt-1 text-sm text-gray-600">
+              Turn what you just learned into a project — Claude will guide you step by step, and you can ask your trainer for input.
+            </p>
+          </div>
+          <div className="shrink-0 sm:w-56">
+            <UseTemplateButton title={linkedTemplate.title} description={linkedTemplate.description} />
+          </div>
+        </div>
+      )}
 
       <ModulePager prev={prev} next={next} />
     </div>

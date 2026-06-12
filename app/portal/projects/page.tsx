@@ -27,6 +27,7 @@ type Template = {
   category: string | null
   recommended_first: boolean
   sort_order: number
+  module_id: string | null
 }
 
 const complexityColor: Record<string, string> = {
@@ -90,6 +91,17 @@ function TemplateCard({ template }: { template: Template }) {
         <p className="mt-1 text-sm text-gray-500 line-clamp-3">{template.description}</p>
       </div>
 
+      {template.module_id && (
+        <Link
+          href={`/portal/modules/${template.module_id}`}
+          className="text-xs font-medium hover:underline flex items-center gap-1"
+          style={{ color: '#2563eb' }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          Read the tutorial first
+        </Link>
+      )}
+
       <UseTemplateButton title={template.title} description={template.description} />
     </div>
   )
@@ -114,7 +126,7 @@ export default async function ProjectsPage() {
     profile?.trainer_id
       ? supabase
           .from('academy_project_templates')
-          .select('id, title, description, complexity_score, complexity_label, category, recommended_first, sort_order')
+          .select('id, title, description, complexity_score, complexity_label, category, recommended_first, sort_order, module_id')
           .eq('trainer_id', profile.trainer_id)
           .order('sort_order', { ascending: true })
       : Promise.resolve({ data: [] }),

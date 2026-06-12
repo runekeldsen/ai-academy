@@ -11,6 +11,7 @@ export type TemplateInput = {
   category: string | null
   recommendedFirst: boolean
   sortOrder: number
+  moduleId: string | null
 }
 
 function toRow(data: TemplateInput) {
@@ -22,6 +23,7 @@ function toRow(data: TemplateInput) {
     category: data.category,
     recommended_first: data.recommendedFirst,
     sort_order: data.sortOrder,
+    module_id: data.moduleId,
   }
 }
 

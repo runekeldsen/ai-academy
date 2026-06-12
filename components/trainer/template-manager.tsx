@@ -12,7 +12,10 @@ export type TemplateRow = {
   category: string | null
   recommended_first: boolean
   sort_order: number
+  module_id: string | null
 }
+
+export type ModuleOption = { id: string; title: string; section: string | null }
 
 const CATEGORIES: { value: string; label: string }[] = [
   { value: 'claude-project', label: 'Create a Claude Project' },
@@ -37,12 +40,14 @@ function categoryLabel(value: string | null) {
 
 function TemplateForm({
   initial,
+  modules,
   onSubmit,
   onCancel,
   pending,
   error,
 }: {
   initial?: TemplateRow
+  modules: ModuleOption[]
   onSubmit: (data: TemplateInput) => void
   onCancel: () => void
   pending: boolean
@@ -55,6 +60,7 @@ function TemplateForm({
   const [category, setCategory] = useState(initial?.category ?? '')
   const [recommendedFirst, setRecommendedFirst] = useState(initial?.recommended_first ?? false)
   const [sortOrder, setSortOrder] = useState(initial?.sort_order ?? 0)
+  const [moduleId, setModuleId] = useState(initial?.module_id ?? '')
 
   return (
     <form
@@ -68,6 +74,7 @@ function TemplateForm({
           category: category || null,
           recommendedFirst,
           sortOrder,
+          moduleId: moduleId || null,
         })
       }}
       className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-200"
@@ -106,6 +113,16 @@ function TemplateForm({
         <input type="checkbox" checked={recommendedFirst} onChange={e => setRecommendedFirst(e.target.checked)} className="rounded border-gray-300" style={{ accentColor: '#16a34a' }} />
         Mark as <span className="font-medium text-green-700">great first project</span>
       </label>
+      <div className="space-y-1">
+        <label className="block text-xs font-medium text-gray-700">Linked tutorial <span className="text-gray-400 font-normal">(optional)</span></label>
+        <select value={moduleId} onChange={e => setModuleId(e.target.value)} className="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="">None</option>
+          {modules.map(m => (
+            <option key={m.id} value={m.id}>{m.section ? `${m.section} — ${m.title}` : m.title}</option>
+          ))}
+        </select>
+        <p className="text-xs text-gray-400">Learners see a &quot;Read the tutorial first&quot; link on this idea, and that tutorial gets a &quot;Start this as a project&quot; button.</p>
+      </div>
       {error && <p className="text-xs text-red-600">{error}</p>}
       <div className="flex gap-2">
         <button type="submit" disabled={pending} className="px-3 py-1.5 rounded-md text-xs font-medium text-white disabled:opacity-50" style={{ backgroundColor: '#2563eb' }}>
@@ -117,7 +134,7 @@ function TemplateForm({
   )
 }
 
-function TemplateItem({ template }: { template: TemplateRow }) {
+function TemplateItem({ template, modules }: { template: TemplateRow; modules: ModuleOption[] }) {
   const [editing, setEditing] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [error, setError] = useState('')
@@ -137,8 +154,10 @@ function TemplateItem({ template }: { template: TemplateRow }) {
   }
 
   if (editing) {
-    return <li className="py-3"><TemplateForm initial={template} onSubmit={handleUpdate} onCancel={() => setEditing(false)} pending={pending} error={error} /></li>
+    return <li className="py-3"><TemplateForm initial={template} modules={modules} onSubmit={handleUpdate} onCancel={() => setEditing(false)} pending={pending} error={error} /></li>
   }
+
+  const linkedModule = template.module_id ? modules.find(m => m.id === template.module_id) : null
 
   return (
     <li className="py-3 flex items-start gap-3">
@@ -154,6 +173,12 @@ function TemplateItem({ template }: { template: TemplateRow }) {
         </div>
         <p className="text-xs text-gray-400 mt-0.5 truncate">{template.description}</p>
         <p className="text-xs text-gray-400 mt-0.5">{categoryLabel(template.category)} · sort {template.sort_order}</p>
+        {template.module_id && (
+          <p className="text-xs mt-0.5 flex items-center gap-1" style={{ color: '#2563eb' }}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+            Tutorial linked{linkedModule ? `: ${linkedModule.title}` : ''}
+          </p>
+        )}
       </div>
       <div className="flex items-center gap-3 shrink-0 pt-0.5">
         <button onClick={() => setEditing(true)} className="text-xs font-medium hover:underline" style={{ color: '#2563eb' }}>Edit</button>
@@ -171,7 +196,7 @@ function TemplateItem({ template }: { template: TemplateRow }) {
   )
 }
 
-export function TemplateManager({ initialTemplates }: { initialTemplates: TemplateRow[] }) {
+export function TemplateManager({ initialTemplates, modules }: { initialTemplates: TemplateRow[]; modules: ModuleOption[] }) {
   const [showAdd, setShowAdd] = useState(false)
   const [error, setError] = useState('')
   const [pending, startTransition] = useTransition()
@@ -208,12 +233,12 @@ export function TemplateManager({ initialTemplates }: { initialTemplates: Templa
           These appear in the learners&apos; Inspiration section, grouped by theme. Templates marked
           &quot;great first project&quot; are highlighted to learners who haven&apos;t started yet.
         </p>
-        {showAdd && <TemplateForm onSubmit={handleCreate} onCancel={() => setShowAdd(false)} pending={pending} error={error} />}
+        {showAdd && <TemplateForm modules={modules} onSubmit={handleCreate} onCancel={() => setShowAdd(false)} pending={pending} error={error} />}
         {initialTemplates.length === 0 && !showAdd ? (
           <p className="text-sm text-gray-400 py-2">No templates yet.</p>
         ) : (
           <ul className="divide-y divide-gray-100 mt-2">
-            {initialTemplates.map(t => <TemplateItem key={t.id} template={t} />)}
+            {initialTemplates.map(t => <TemplateItem key={t.id} template={t} modules={modules} />)}
           </ul>
         )}
       </div>

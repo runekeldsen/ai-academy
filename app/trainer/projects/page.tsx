@@ -35,7 +35,7 @@ export default async function TrainerProjectsPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: projects }, { data: templates }] = await Promise.all([
+  const [{ data: projects }, { data: templates }, { data: modules }] = await Promise.all([
     supabase
       .from('academy_projects')
       .select('id, learner_id, title, description, complexity_score, complexity_label, ai_guide, ai_warnings, trainer_requested, trainer_feedback, trainer_responded_at, updated_at, academy_profiles!learner_id(first_name, last_name)')
@@ -43,10 +43,19 @@ export default async function TrainerProjectsPage() {
       .order('updated_at', { ascending: false }),
     supabase
       .from('academy_project_templates')
-      .select('id, title, description, complexity_score, complexity_label, category, recommended_first, sort_order')
+      .select('id, title, description, complexity_score, complexity_label, category, recommended_first, sort_order, module_id')
       .eq('trainer_id', user!.id)
       .order('sort_order', { ascending: true }),
+    supabase
+      .from('academy_modules')
+      .select('id, title, academy_sections(title)')
+      .eq('trainer_id', user!.id)
+      .eq('published', true)
+      .order('sort_order', { ascending: true }),
   ])
+
+  const moduleOptions = ((modules as unknown as { id: string; title: string; academy_sections: { title: string } | null }[]) ?? [])
+    .map(m => ({ id: m.id, title: m.title, section: m.academy_sections?.title ?? null }))
 
   const all = (projects as unknown as Project[]) ?? []
 
@@ -120,7 +129,7 @@ export default async function TrainerProjectsPage() {
         </div>
       )}
 
-      <TemplateManager initialTemplates={(templates as TemplateRow[]) ?? []} />
+      <TemplateManager initialTemplates={(templates as TemplateRow[]) ?? []} modules={moduleOptions} />
     </div>
   )
 }
