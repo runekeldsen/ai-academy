@@ -19,6 +19,21 @@ export async function updateProfile(firstName: string, lastName: string): Promis
   return {}
 }
 
+export async function updateEmailNudges(enabled: boolean): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { error } = await supabase
+    .from('academy_profiles')
+    .update({ email_nudges: enabled })
+    .eq('id', user.id)
+
+  if (error) return { error: error.message }
+  revalidatePath('/portal/profile')
+  return {}
+}
+
 export async function markWelcomeSeen(): Promise<void> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

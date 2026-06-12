@@ -3,6 +3,7 @@ import { ProfileForm } from '@/components/shared/profile-form'
 import { getJourney } from '@/lib/journey'
 import { getMotivation } from '@/lib/achievements'
 import { GrowthCard } from '@/components/portal/achievement-badges'
+import { NudgeToggle } from '@/components/portal/nudge-toggle'
 
 export default async function PortalProfilePage() {
   const supabase = await createClient()
@@ -10,7 +11,7 @@ export default async function PortalProfilePage() {
 
   const { data: profile } = await supabase
     .from('academy_profiles')
-    .select('first_name, last_name, trainer_id, team_id')
+    .select('first_name, last_name, trainer_id, team_id, email_nudges')
     .eq('id', user!.id)
     .single()
 
@@ -27,6 +28,7 @@ export default async function PortalProfilePage() {
         <p className="mt-1 text-sm text-gray-500">Update your name and password.</p>
       </div>
       {journey.orderedModules.length > 0 && <GrowthCard motivation={motivation} />}
+      <NudgeToggle initialEnabled={profile?.email_nudges !== false} />
       <ProfileForm
         firstName={profile?.first_name ?? ''}
         lastName={profile?.last_name ?? ''}

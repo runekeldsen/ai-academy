@@ -120,6 +120,43 @@ export async function saveTrainerFeedback(id: string, feedback: string): Promise
     .eq('id', id)
 
   if (error) return { error: error.message }
+  await notifyLearnerOfFeedback(supabase, id)
   revalidatePath('/trainer/projects')
   return {}
+}
+
+// Fire-and-forget — n8n downtime must never break the trainer's save
+async function notifyLearnerOfFeedback(supabase: Awaited<ReturnType<typeof createClient>>, projectId: string) {
+  try {
+    const url = process.env.NUDGE_FEEDBACK_WEBHOOK_URL
+    if (!url || !process.env.NUDGE_API_SECRET) return
+
+    const { data: project } = await supabase
+      .from('academy_projects')
+      .select('title, learner_id')
+      .eq('id', projectId)
+      .single()
+    if (!project) return
+
+    const { data: learner } = await supabase
+      .from('academy_profiles')
+      .select('first_name, email, email_nudges')
+      .eq('id', project.learner_id)
+      .single()
+    if (!learner?.email || learner.email_nudges === false) return
+
+    await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret: process.env.NUDGE_API_SECRET,
+        email: learner.email,
+        firstName: learner.first_name,
+        projectTitle: project.title,
+        projectId,
+      }),
+    })
+  } catch {
+    // never surface nudge failures to the trainer
+  }
 }
