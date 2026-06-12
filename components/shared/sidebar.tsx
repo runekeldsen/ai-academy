@@ -120,7 +120,7 @@ export function Sidebar({ items, title, user, profileHref }: { items: NavItem[];
         className={cn(
           'flex flex-col w-64 xl:w-72 z-50',
           'fixed inset-y-0 left-0 md:static',
-          'h-screen md:min-h-screen shrink-0',
+          'h-[100dvh] md:min-h-screen shrink-0',
           'transition-transform duration-300 ease-in-out',
           mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         )}
@@ -149,7 +149,7 @@ export function Sidebar({ items, title, user, profileHref }: { items: NavItem[];
         </nav>
 
         {/* User + Sign out */}
-        <div className="px-3 py-4 border-t border-white/10 space-y-2">
+        <div className="px-3 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] border-t border-white/10 space-y-2 shrink-0">
           {user && (
             profileHref ? (
               <Link href={profileHref} className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-white/5 transition-colors group">
