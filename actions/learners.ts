@@ -82,8 +82,11 @@ export async function resendInvite(userId: string, origin: string): Promise<{ er
     .single()
   if (!learner?.email) return { error: 'Learner not found' }
 
-  // Send password reset email — works for already-confirmed users
-  const { error } = await supabase.auth.resetPasswordForEmail(learner.email, {
+  // Send password reset email — works for already-confirmed users.
+  // Use the implicit recovery client so the link isn't PKCE-bound to a browser
+  // (see lib/supabase/recovery-client.ts).
+  const { createRecoveryClient } = await import('@/lib/supabase/recovery-client')
+  const { error } = await createRecoveryClient().auth.resetPasswordForEmail(learner.email, {
     redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/auth/reset-password`,
   })
   if (error) return { error: error.message }

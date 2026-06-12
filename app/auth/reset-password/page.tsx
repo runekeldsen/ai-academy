@@ -22,6 +22,13 @@ function ResetPassword() {
   // token_hash + verifyOtp works in any browser, unlike a PKCE code.
   useEffect(() => {
     const supabase = createClient()
+
+    // Callback redirects here with ?error when a recovery link is expired/used.
+    if (searchParams.get('error')) {
+      setStage('invalid')
+      return
+    }
+
     const tokenHash = searchParams.get('token_hash')
     const type = (searchParams.get('type') ?? 'recovery') as 'recovery' | 'email'
 
