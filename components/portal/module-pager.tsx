@@ -8,7 +8,7 @@ export function ModulePager({ prev, next }: { prev: PagerModule | null; next: Pa
       {prev ? (
         <Link
           href={`/portal/modules/${prev.id}`}
-          className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all p-4 flex items-center gap-3"
+          className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-sm motion-safe:hover:-translate-y-0.5 transition-all p-4 flex items-center gap-3"
         >
           <span className="text-gray-400 group-hover:-translate-x-0.5 transition-transform shrink-0" aria-hidden>←</span>
           <span className="min-w-0">

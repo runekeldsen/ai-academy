@@ -67,7 +67,7 @@ export default async function TestsPage() {
               <Link
                 key={test.id}
                 href={`/portal/tests/${test.id}`}
-                className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all p-5 flex flex-col gap-3"
+                className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-sm motion-safe:hover:-translate-y-0.5 transition-all p-5 flex flex-col gap-3"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: attempt ? '#dcfce7' : '#dbeafe' }}>

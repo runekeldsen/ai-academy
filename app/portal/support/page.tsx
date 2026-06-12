@@ -112,7 +112,7 @@ export default async function SupportPage({
                     <Link
                       key={thread.id}
                       href={`/portal/support/${thread.id}`}
-                      className="flex items-start justify-between gap-4 bg-white rounded-xl border border-gray-200 px-5 py-4 hover:border-blue-300 hover:shadow-sm transition-all"
+                      className="flex items-start justify-between gap-4 bg-white rounded-xl border border-gray-200 px-5 py-4 hover:border-blue-300 hover:shadow-sm motion-safe:hover:-translate-y-0.5 transition-all"
                     >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
