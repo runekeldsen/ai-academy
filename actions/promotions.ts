@@ -1,7 +1,15 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdmin } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
+
+function getAdmin() {
+  return createAdmin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function createPromotion(data: {
   teamId: string
@@ -35,7 +43,7 @@ export async function createPromotion(data: {
     .single()
   if (!content) return { error: 'Content not found' }
 
-  const { error } = await supabase
+  const { error } = await getAdmin()
     .from('academy_promotions')
     .insert({
       trainer_id: user.id,
@@ -58,7 +66,7 @@ export async function deletePromotion(id: string): Promise<{ error?: string }> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  const { error } = await supabase
+  const { error } = await getAdmin()
     .from('academy_promotions')
     .delete()
     .eq('id', id)
@@ -74,7 +82,7 @@ export async function dismissPromotion(promotionId: string): Promise<void> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
-  await supabase
+  await getAdmin()
     .from('academy_promotion_dismissals')
     .upsert(
       { promotion_id: promotionId, learner_id: user.id },

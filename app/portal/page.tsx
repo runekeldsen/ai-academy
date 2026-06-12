@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdmin } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { MarkRead } from '@/components/portal/mark-read'
 import { WelcomeDialog } from '@/components/portal/welcome-dialog'
@@ -45,14 +46,18 @@ export default async function LearnerPortal() {
   type Promo = { id: string; title: string; kind: string; href: string }
   let promotions: Promo[] = []
   if (profile?.team_id) {
-    const { data: promos } = await supabase
+    const admin = createAdmin(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    const { data: promos } = await admin
       .from('academy_promotions')
       .select('id, content_type, content_id, created_at')
       .eq('team_id', profile.team_id)
       .order('created_at', { ascending: false })
 
     if (promos && promos.length > 0) {
-      const { data: dismissed } = await supabase
+      const { data: dismissed } = await admin
         .from('academy_promotion_dismissals')
         .select('promotion_id')
         .eq('learner_id', user!.id)
