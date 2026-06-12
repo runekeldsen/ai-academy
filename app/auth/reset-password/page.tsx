@@ -1,19 +1,43 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-export default function ResetPasswordPage() {
+function ResetPassword() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const [stage, setStage] = useState<'verifying' | 'ready' | 'invalid'>('verifying')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [done, setDone] = useState(false)
+
+  // Establish the recovery session from the link before showing the form.
+  // token_hash + verifyOtp works in any browser, unlike a PKCE code.
+  useEffect(() => {
+    const supabase = createClient()
+    const tokenHash = searchParams.get('token_hash')
+    const type = (searchParams.get('type') ?? 'recovery') as 'recovery' | 'email'
+
+    if (tokenHash) {
+      supabase.auth.verifyOtp({ token_hash: tokenHash, type }).then(({ error }) => {
+        setStage(error ? 'invalid' : 'ready')
+      })
+      return
+    }
+
+    // No token in the URL — only valid if a recovery session already exists
+    // (e.g. the page was refreshed after verifying).
+    supabase.auth.getSession().then(({ data }) => {
+      setStage(data.session ? 'ready' : 'invalid')
+    })
+  }, [searchParams])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -50,7 +74,24 @@ export default function ResetPasswordPage() {
 
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md">
-          {done ? (
+          {stage === 'verifying' ? (
+            <p className="text-sm text-gray-400 text-center">Verifying your reset link…</p>
+          ) : stage === 'invalid' ? (
+            <div className="text-center space-y-4">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto bg-red-50">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </div>
+              <h2 className="font-heading text-xl font-bold text-gray-800">Reset link expired</h2>
+              <p className="text-sm text-gray-500">
+                This password reset link is invalid or has already been used. Request a new one to continue.
+              </p>
+              <Link href="/auth/forgot-password" className="block mt-4 text-sm font-medium hover:underline" style={{ color: '#2563eb' }}>
+                Request a new reset link →
+              </Link>
+            </div>
+          ) : done ? (
             <div className="text-center space-y-4">
               <div className="w-12 h-12 rounded-full flex items-center justify-center mx-auto" style={{ backgroundColor: '#dcfce7' }}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2">
@@ -103,5 +144,13 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetPassword />
+    </Suspense>
   )
 }
