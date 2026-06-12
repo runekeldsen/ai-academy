@@ -74,6 +74,57 @@ export default async function LearnersPage() {
             </a>
           </div>
         ) : (
+          <>
+          {/* Mobile: stacked cards so every action stays reachable */}
+          <div className="md:hidden divide-y divide-gray-100">
+            {(learners as Learner[]).map(l => {
+              const confirmed = authStatus?.find((a: { id: string; confirmed_at: string | null }) => a.id === l.id)?.confirmed_at
+              return (
+                <div key={l.id} className="p-4 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                      style={{ backgroundColor: '#2563eb' }}
+                    >
+                      {l.first_name[0]}{l.last_name[0]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-800 truncate">{l.first_name} {l.last_name}</p>
+                      <p className="text-xs text-gray-500 truncate">{l.email}</p>
+                    </div>
+                    <span className={`shrink-0 inline-flex items-center text-xs px-2 py-0.5 rounded-full font-medium ${confirmed ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
+                      {confirmed ? 'Active' : 'Pending'}
+                    </span>
+                  </div>
+                  <LearnerTeamSelect
+                    learnerId={l.id}
+                    currentTeamId={l.team_id}
+                    teams={teams ?? []}
+                  />
+                  <div className="flex flex-wrap items-center gap-1.5 text-xs text-gray-400">
+                    <span>Invited {new Date(l.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                    <span>·</span>
+                    <span>{l.last_active_at ? `Active ${timeAgo(l.last_active_at)}` : 'Never active'}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-3 border-t border-gray-100">
+                    <a
+                      href={`/trainer/learners/${l.id}`}
+                      className="text-sm font-medium hover:underline"
+                      style={{ color: '#2563eb' }}
+                    >
+                      Progress
+                    </a>
+                    <ResendInviteButton userId={l.id} origin={origin} />
+                    <SetPasswordButton userId={l.id} name={`${l.first_name} ${l.last_name}`} />
+                    <DeleteLearnerButton userId={l.id} />
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* Desktop: table */}
+          <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-100 bg-gray-50">
@@ -146,6 +197,8 @@ export default async function LearnersPage() {
               })}
             </tbody>
           </table>
+          </div>
+          </>
         )}
       </div>
     </div>
