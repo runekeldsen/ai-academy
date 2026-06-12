@@ -7,6 +7,7 @@ import { SectionProgress } from '@/components/portal/section-progress'
 import { getJourney, getContinueModule, isPrereqUnmet, isNewModule } from '@/lib/journey'
 import { getMotivation } from '@/lib/achievements'
 import { GrowthCard } from '@/components/portal/achievement-badges'
+import { PromotionBanner } from '@/components/portal/promotion-banner'
 
 const difficultyStyle: Record<string, string> = {
   Beginner:     'bg-green-50 text-green-700 border-green-200',
@@ -40,6 +41,52 @@ export default async function LearnerPortal() {
 
   const showWelcome = !profile?.welcomed_at
 
+  // Pinned promotions for this learner's team (hidden once opened/dismissed)
+  type Promo = { id: string; title: string; kind: string; href: string }
+  let promotions: Promo[] = []
+  if (profile?.team_id) {
+    const { data: promos } = await supabase
+      .from('academy_promotions')
+      .select('id, content_type, content_id, created_at')
+      .eq('team_id', profile.team_id)
+      .order('created_at', { ascending: false })
+
+    if (promos && promos.length > 0) {
+      const { data: dismissed } = await supabase
+        .from('academy_promotion_dismissals')
+        .select('promotion_id')
+        .eq('learner_id', user!.id)
+        .in('promotion_id', promos.map(p => p.id))
+      const dismissedIds = new Set((dismissed ?? []).map(d => d.promotion_id))
+      const active = promos.filter(p => !dismissedIds.has(p.id))
+
+      const moduleIds = active.filter(p => p.content_type === 'module').map(p => p.content_id)
+      const resourceIds = active.filter(p => p.content_type === 'resource').map(p => p.content_id)
+
+      const [{ data: mods }, { data: res }] = await Promise.all([
+        moduleIds.length
+          ? supabase.from('academy_modules').select('id, title, published').in('id', moduleIds)
+          : Promise.resolve({ data: [] as { id: string; title: string; published: boolean }[] }),
+        resourceIds.length
+          ? supabase.from('academy_resources').select('id, title, type').in('id', resourceIds)
+          : Promise.resolve({ data: [] as { id: string; title: string; type: string }[] }),
+      ])
+      const modMap = new Map((mods ?? []).map(m => [m.id, m]))
+      const resMap = new Map((res ?? []).map(r => [r.id, r]))
+
+      promotions = active.flatMap(p => {
+        if (p.content_type === 'module') {
+          const m = modMap.get(p.content_id)
+          if (!m || !m.published) return []
+          return [{ id: p.id, title: m.title, kind: 'Module', href: `/portal/modules/${m.id}` }]
+        }
+        const r = resMap.get(p.content_id)
+        if (!r) return []
+        return [{ id: p.id, title: r.title, kind: r.type === 'podcast' ? 'Podcast' : 'Video', href: '/portal/resources' }]
+      })
+    }
+  }
+
   return (
     <div className="space-y-10">
       <MarkRead section="portal" />
@@ -62,6 +109,8 @@ export default async function LearnerPortal() {
           {team.welcome_message}
         </div>
       )}
+
+      <PromotionBanner promotions={promotions} />
 
       <ContinueHero
         module={continueModule}

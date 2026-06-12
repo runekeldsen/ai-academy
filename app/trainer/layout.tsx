@@ -10,6 +10,7 @@ const navItems = [
   { label: 'Tests', href: '/trainer/tests' },
   { label: 'Projects', href: '/trainer/projects' },
   { label: 'Resources', href: '/trainer/resources' },
+  { label: 'Promotions', href: '/trainer/promotions' },
   { label: 'Support', href: '/trainer/support' },
   { label: 'Invite', href: '/trainer/invite' },
 ]
