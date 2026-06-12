@@ -112,3 +112,34 @@ export async function resendInvite(userId: string, origin: string): Promise<{ er
 
   return {}
 }
+
+export async function setLearnerPassword(userId: string, password: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Unauthorized' }
+
+  if (typeof password !== 'string' || password.length < 8) {
+    return { error: 'Password must be at least 8 characters' }
+  }
+
+  // Verify the learner belongs to this trainer
+  const { data: learner } = await supabase
+    .from('academy_profiles')
+    .select('id')
+    .eq('id', userId)
+    .eq('trainer_id', user.id)
+    .eq('role', 'learner')
+    .single()
+  if (!learner) return { error: 'Learner not found' }
+
+  const { createClient: createAdmin } = await import('@supabase/supabase-js')
+  const admin = createAdmin(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  const { error } = await admin.auth.admin.updateUserById(userId, { password })
+  if (error) return { error: error.message }
+
+  return {}
+}

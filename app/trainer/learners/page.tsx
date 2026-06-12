@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { ResendInviteButton } from '@/components/trainer/resend-invite-button'
 import { DeleteLearnerButton } from '@/components/trainer/delete-learner-button'
+import { SetPasswordButton } from '@/components/trainer/set-password-button'
 import { LearnerTeamSelect } from '@/components/trainer/learner-team-select'
 import { headers } from 'next/headers'
 
@@ -136,6 +137,7 @@ export default async function LearnersPage() {
                           Progress
                         </a>
                         <ResendInviteButton userId={l.id} origin={origin} />
+                        <SetPasswordButton userId={l.id} name={`${l.first_name} ${l.last_name}`} />
                         <DeleteLearnerButton userId={l.id} />
                       </div>
                     </td>
