@@ -30,15 +30,20 @@ function CallbackHandler() {
       return
     }
 
-    // Implicit flow: tokens arrive in the URL fragment, picked up automatically
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && (event === 'SIGNED_IN' || event === 'PASSWORD_RECOVERY')) {
-        subscription.unsubscribe()
-        router.replace(next)
-      }
-    })
+    // Implicit flow: tokens arrive in the URL fragment. The @supabase/ssr client
+    // is PKCE-oriented and won't auto-parse it, so establish the session manually.
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    const accessToken = hashParams.get('access_token')
+    const refreshToken = hashParams.get('refresh_token')
 
-    return () => subscription.unsubscribe()
+    if (accessToken && refreshToken) {
+      supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken }).then(({ error }) => {
+        router.replace(error ? '/auth/login?error=invalid_link' : next)
+      })
+      return
+    }
+
+    router.replace('/auth/login?error=invalid_link')
   }, [router, searchParams])
 
   return (
