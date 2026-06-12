@@ -18,7 +18,7 @@ function VideoCard({ video }: { video: Video }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden group">
+    <div id={`resource-${video.id}`} className="bg-white rounded-xl border border-gray-200 overflow-hidden group scroll-mt-24">
       {playing ? (
         <div className="relative" style={{ paddingTop: '56.25%' }}>
           <iframe

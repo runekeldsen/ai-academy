@@ -81,7 +81,7 @@ export default async function PortalResourcesPage() {
           </h2>
           <div className="space-y-4">
             {podcasts.map(p => (
-              <div key={p.id} className="bg-white rounded-xl border border-gray-200 p-5 space-y-3">
+              <div key={p.id} id={`resource-${p.id}`} className="bg-white rounded-xl border border-gray-200 p-5 space-y-3 scroll-mt-24">
                 <div className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ backgroundColor: '#ede9fe' }}>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -87,7 +87,7 @@ export default async function LearnerPortal() {
         }
         const r = resMap.get(p.content_id)
         if (!r) return []
-        return [{ id: p.id, title: r.title, kind: r.type === 'podcast' ? 'Podcast' : 'Video', href: '/portal/resources' }]
+        return [{ id: p.id, title: r.title, kind: r.type === 'podcast' ? 'Podcast' : 'Video', href: `/portal/resources#resource-${r.id}` }]
       })
     }
   }
