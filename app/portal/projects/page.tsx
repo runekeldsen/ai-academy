@@ -221,7 +221,7 @@ export default async function ProjectsPage() {
                 <Link
                   key={project.id}
                   href={`/portal/projects/${project.id}`}
-                  className="group bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-sm motion-safe:hover:-translate-y-0.5 transition-all p-5 flex flex-col gap-3"
+                  className="group card-lift bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all p-5 flex flex-col gap-3"
                 >
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-heading font-semibold text-gray-800 group-hover:text-blue-600 transition-colors flex-1">{project.title}</h3>

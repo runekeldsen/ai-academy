@@ -219,7 +219,7 @@ export default async function LearnerPortal() {
                       <Link
                         key={mod.id}
                         href={`/portal/modules/${mod.id}`}
-                        className={`group bg-white rounded-xl border p-5 hover:shadow-sm motion-safe:hover:-translate-y-0.5 transition-all flex flex-col gap-3 ${
+                        className={`group card-lift bg-white rounded-xl border p-5 hover:shadow-sm transition-all flex flex-col gap-3 ${
                           isCompleted
                             ? 'border-green-200 bg-green-50/30'
                             : 'border-gray-200 hover:border-blue-300'

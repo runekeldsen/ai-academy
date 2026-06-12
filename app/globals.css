@@ -263,3 +263,19 @@
   display: block;
   box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06);
 }
+
+/* Hover lift for clickable cards. Uses a plain :hover rule (not Tailwind's
+   hover: utilities, which are wrapped in @media(hover:hover)) so the effect
+   also fires under the iPad trackpad cursor — iPadOS reports hover:none. */
+.card-lift {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px -2px rgb(0 0 0 / 0.08);
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-lift:hover {
+    transform: none;
+  }
+}
