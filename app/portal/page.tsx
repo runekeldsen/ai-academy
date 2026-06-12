@@ -124,21 +124,24 @@ export default async function LearnerPortal() {
       </div>
 
       {team?.welcome_message && (
-        <div className="relative overflow-hidden rounded-2xl shadow-sm bg-gradient-to-br from-[#2563eb] to-[#1d4ed8] px-6 py-6 sm:px-8 sm:py-7 text-white">
-          <div className="pointer-events-none absolute -top-12 -right-10 w-44 h-44 rounded-full bg-white/10" />
-          <div className="pointer-events-none absolute -bottom-14 -left-8 w-36 h-36 rounded-full bg-white/[0.07]" />
-          <div className="relative flex items-start gap-4">
-            <div className="shrink-0 w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m3 11 18-5v12L3 14v-3z"/>
-                <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>
+        <div className="relative overflow-hidden rounded-2xl border border-blue-100 bg-blue-50/40 shadow-sm">
+          <div className="absolute inset-y-0 left-0 w-1.5" style={{ backgroundColor: '#2563eb' }} />
+          <div className="flex items-start gap-4 py-5 pr-6 pl-7">
+            <div
+              className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: '#dbeafe' }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
               </svg>
             </div>
             <div className="min-w-0">
-              <p className="text-xs font-semibold uppercase tracking-wider text-blue-100">
-                {team.name ? `A message from ${team.name}` : 'A message for you'}
-              </p>
-              <p className="mt-1.5 text-[15px] leading-relaxed text-white whitespace-pre-line">
+              {team.name && (
+                <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: '#2563eb' }}>
+                  {team.name}
+                </p>
+              )}
+              <p className="mt-1 text-sm leading-relaxed text-gray-700 whitespace-pre-line">
                 {team.welcome_message}
               </p>
             </div>
