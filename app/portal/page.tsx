@@ -124,8 +124,25 @@ export default async function LearnerPortal() {
       </div>
 
       {team?.welcome_message && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl px-5 py-4 text-sm text-blue-800 whitespace-pre-line">
-          {team.welcome_message}
+        <div className="relative overflow-hidden rounded-2xl shadow-sm bg-gradient-to-br from-[#2563eb] to-[#1d4ed8] px-6 py-6 sm:px-8 sm:py-7 text-white">
+          <div className="pointer-events-none absolute -top-12 -right-10 w-44 h-44 rounded-full bg-white/10" />
+          <div className="pointer-events-none absolute -bottom-14 -left-8 w-36 h-36 rounded-full bg-white/[0.07]" />
+          <div className="relative flex items-start gap-4">
+            <div className="shrink-0 w-11 h-11 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m3 11 18-5v12L3 14v-3z"/>
+                <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>
+              </svg>
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-wider text-blue-100">
+                {team.name ? `A message from ${team.name}` : 'A message for you'}
+              </p>
+              <p className="mt-1.5 text-[15px] leading-relaxed text-white whitespace-pre-line">
+                {team.welcome_message}
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
