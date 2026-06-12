@@ -43,7 +43,16 @@ export default async function LearnerPortal() {
   const showWelcome = !profile?.welcomed_at
 
   // Pinned promotions for this learner's team (hidden once opened/dismissed)
-  type Promo = { id: string; title: string; kind: string; href: string }
+  type Promo = {
+    id: string
+    kind: 'Module' | 'Podcast' | 'Video'
+    title: string
+    description?: string | null
+    href?: string
+    resourceId?: string
+    src?: string
+    youtubeId?: string
+  }
   let promotions: Promo[] = []
   if (profile?.team_id) {
     const admin = createAdmin(
@@ -73,21 +82,26 @@ export default async function LearnerPortal() {
           ? supabase.from('academy_modules').select('id, title, published').in('id', moduleIds)
           : Promise.resolve({ data: [] as { id: string; title: string; published: boolean }[] }),
         resourceIds.length
-          ? supabase.from('academy_resources').select('id, title, type').in('id', resourceIds)
-          : Promise.resolve({ data: [] as { id: string; title: string; type: string }[] }),
+          ? supabase.from('academy_resources').select('id, title, description, type, url').in('id', resourceIds)
+          : Promise.resolve({ data: [] as { id: string; title: string; description: string | null; type: string; url: string }[] }),
       ])
       const modMap = new Map((mods ?? []).map(m => [m.id, m]))
       const resMap = new Map((res ?? []).map(r => [r.id, r]))
 
-      promotions = active.flatMap(p => {
+      const ytId = (url: string) => url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/)?.[1] ?? null
+
+      promotions = active.flatMap<Promo>(p => {
         if (p.content_type === 'module') {
           const m = modMap.get(p.content_id)
           if (!m || !m.published) return []
-          return [{ id: p.id, title: m.title, kind: 'Module', href: `/portal/modules/${m.id}` }]
+          return [{ id: p.id, kind: 'Module', title: m.title, href: `/portal/modules/${m.id}` }]
         }
         const r = resMap.get(p.content_id)
         if (!r) return []
-        return [{ id: p.id, title: r.title, kind: r.type === 'podcast' ? 'Podcast' : 'Video', href: `/portal/resources#resource-${r.id}` }]
+        if (r.type === 'podcast') {
+          return [{ id: p.id, kind: 'Podcast', title: r.title, description: r.description, resourceId: r.id, src: r.url }]
+        }
+        return [{ id: p.id, kind: 'Video', title: r.title, description: r.description, resourceId: r.id, youtubeId: ytId(r.url) ?? '' }]
       })
     }
   }

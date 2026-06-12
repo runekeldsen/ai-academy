@@ -1,70 +1,169 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { dismissPromotion } from '@/actions/promotions'
+import { recordResourceView, markResourceCompleted } from '@/actions/resources'
 
-type Promo = { id: string; title: string; kind: string; href: string }
+type Promo = {
+  id: string
+  kind: 'Module' | 'Podcast' | 'Video'
+  title: string
+  description?: string | null
+  href?: string
+  resourceId?: string
+  src?: string
+  youtubeId?: string
+}
 
-function Icon({ kind }: { kind: string }) {
-  if (kind === 'Podcast') {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" />
-      </svg>
-    )
-  }
-  if (kind === 'Video') {
-    return (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M9.7 15.5V8.4l8.1 3.6-8.1 3.5z" /><path d="M23 7s-.3-2-1.2-2.8c-1.1-1.2-2.4-1.2-3-1.3C16.2 2.8 12 2.8 12 2.8s-4.2 0-6.8.2c-.6.1-1.9.1-3 1.3C1.3 5 1 7 1 7S.7 9.1.7 11.3v2c0 2.1.3 4.2.3 4.2s.3 2 1.2 2.8c1.1 1.2 2.6 1.1 3.3 1.2C7.3 21.7 12 21.7 12 21.7s4.2 0 6.8-.3c.6-.1 1.9-.1 3-1.3.9-.8 1.2-2.8 1.2-2.8s.3-2.1.3-4.2v-2C23.3 9.1 23 7 23 7z" fill="none" stroke="currentColor" strokeWidth="2" /></svg>
-    )
-  }
+function FeaturedShell({ kind, title, description, children }: {
+  kind: string
+  title: string
+  description?: string | null
+  children: React.ReactNode
+}) {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" />
-    </svg>
+    <div
+      className="relative rounded-2xl border-2 border-blue-300 overflow-hidden shadow-sm"
+      style={{ background: 'linear-gradient(135deg, #eff6ff 0%, #eef2ff 100%)' }}
+    >
+      <div className="px-5 pt-4 pb-1 flex items-center gap-2">
+        <span className="relative flex h-2 w-2">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: '#2563eb' }} />
+          <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: '#2563eb' }} />
+        </span>
+        <span className="text-[11px] font-bold uppercase tracking-wide" style={{ color: '#2563eb' }}>
+          ★ Featured by your trainer
+        </span>
+        <span className="ml-auto text-[11px] font-medium px-2 py-0.5 rounded-full bg-white text-blue-700 border border-blue-200">{kind}</span>
+      </div>
+      <div className="px-5 pb-5 pt-2 space-y-3">
+        <div>
+          <h3 className="font-heading text-lg font-bold text-gray-900">{title}</h3>
+          {description && <p className="text-sm text-gray-600 mt-0.5 leading-relaxed">{description}</p>}
+        </div>
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function PodcastPromo({ promo }: { promo: Promo }) {
+  const started = useRef(false)
+  const completed = useRef(false)
+
+  function handlePlay() {
+    if (!started.current) {
+      started.current = true
+      if (promo.resourceId) recordResourceView(promo.resourceId)
+      dismissPromotion(promo.id)
+    }
+  }
+  function handleEnded() {
+    if (!completed.current) {
+      completed.current = true
+      if (promo.resourceId) markResourceCompleted(promo.resourceId)
+    }
+  }
+
+  return (
+    <FeaturedShell kind="Podcast" title={promo.title} description={promo.description}>
+      <audio
+        controls
+        src={promo.src}
+        onPlay={handlePlay}
+        onEnded={handleEnded}
+        className="w-full rounded-lg"
+        style={{ accentColor: '#2563eb' }}
+      />
+    </FeaturedShell>
+  )
+}
+
+function VideoPromo({ promo }: { promo: Promo }) {
+  const [playing, setPlaying] = useState(false)
+  const tracked = useRef(false)
+
+  function handlePlay() {
+    setPlaying(true)
+    if (!tracked.current) {
+      tracked.current = true
+      if (promo.resourceId) recordResourceView(promo.resourceId)
+      dismissPromotion(promo.id)
+    }
+  }
+
+  return (
+    <FeaturedShell kind="Video" title={promo.title} description={promo.description}>
+      <div className="rounded-lg overflow-hidden border border-blue-200">
+        {playing ? (
+          <div className="relative" style={{ paddingTop: '56.25%' }}>
+            <iframe
+              className="absolute inset-0 w-full h-full"
+              src={`https://www.youtube.com/embed/${promo.youtubeId}?autoplay=1`}
+              title={promo.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        ) : (
+          <button
+            onClick={handlePlay}
+            className="relative w-full focus:outline-none group block"
+            style={{ paddingTop: '56.25%' }}
+            aria-label={`Play ${promo.title}`}
+          >
+            <img
+              src={`https://img.youtube.com/vi/${promo.youtubeId}/hqdefault.jpg`}
+              alt={promo.title}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-transform group-hover:scale-110" style={{ backgroundColor: 'rgba(220,38,38,0.92)' }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><polygon points="5,3 19,12 5,21" /></svg>
+              </div>
+            </div>
+          </button>
+        )}
+      </div>
+    </FeaturedShell>
+  )
+}
+
+function ModulePromo({ promo }: { promo: Promo }) {
+  const router = useRouter()
+  const [busy, setBusy] = useState(false)
+
+  async function open() {
+    setBusy(true)
+    await dismissPromotion(promo.id)
+    router.push(promo.href!)
+  }
+
+  return (
+    <FeaturedShell kind="Module" title={promo.title} description={promo.description}>
+      <button
+        onClick={open}
+        disabled={busy}
+        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-60"
+        style={{ backgroundColor: '#2563eb' }}
+      >
+        {busy ? 'Opening…' : 'Start this module'} <span>→</span>
+      </button>
+    </FeaturedShell>
   )
 }
 
 export function PromotionBanner({ promotions }: { promotions: Promo[] }) {
-  const router = useRouter()
-  const [busy, setBusy] = useState<string | null>(null)
-
   if (promotions.length === 0) return null
-
-  async function open(p: Promo) {
-    setBusy(p.id)
-    await dismissPromotion(p.id)
-    router.push(p.href)
-  }
-
   return (
-    <div className="space-y-3">
-      {promotions.map(p => (
-        <button
-          key={p.id}
-          onClick={() => open(p)}
-          disabled={busy === p.id}
-          className="w-full text-left rounded-xl border border-blue-200 px-5 py-4 flex items-center gap-4 transition-all hover:shadow-sm disabled:opacity-60"
-          style={{ backgroundColor: '#eff6ff' }}
-        >
-          <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 text-white" style={{ backgroundColor: '#2563eb' }}>
-            <Icon kind={p.kind} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: '#2563eb' }}>
-                ★ From your trainer
-              </span>
-              <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-white text-blue-700 border border-blue-200">{p.kind}</span>
-            </div>
-            <h3 className="font-heading font-semibold text-gray-900 truncate mt-0.5">{p.title}</h3>
-          </div>
-          <span className="text-sm font-medium shrink-0 flex items-center gap-1" style={{ color: '#2563eb' }}>
-            {busy === p.id ? 'Opening…' : 'Open'} <span>→</span>
-          </span>
-        </button>
-      ))}
+    <div className="space-y-4">
+      {promotions.map(p =>
+        p.kind === 'Podcast' ? <PodcastPromo key={p.id} promo={p} />
+          : p.kind === 'Video' ? <VideoPromo key={p.id} promo={p} />
+            : <ModulePromo key={p.id} promo={p} />
+      )}
     </div>
   )
 }
