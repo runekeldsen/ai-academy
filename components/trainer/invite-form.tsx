@@ -7,12 +7,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
-export function InviteForm({ origin }: { origin: string }) {
+type Team = { id: string; name: string }
+
+export function InviteForm({ origin, teams }: { origin: string; teams: Team[] }) {
   const router = useRouter()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [teamId, setTeamId] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -24,7 +27,7 @@ export function InviteForm({ origin }: { origin: string }) {
     setLoading(true)
     setError('')
 
-    const result = await createLearner({ firstName, lastName, email, password })
+    const result = await createLearner({ firstName, lastName, email, password, teamId: teamId || null })
 
     if (result.error) {
       setError(result.error)
@@ -76,7 +79,7 @@ export function InviteForm({ origin }: { origin: string }) {
 
         <div className="flex gap-3">
           <Button
-            onClick={() => { setSuccess(false); setFirstName(''); setLastName(''); setEmail(''); setPassword(''); setShowPassword(false) }}
+            onClick={() => { setSuccess(false); setFirstName(''); setLastName(''); setEmail(''); setPassword(''); setTeamId(''); setShowPassword(false) }}
             variant="outline"
           >
             Add another
@@ -143,6 +146,21 @@ export function InviteForm({ origin }: { origin: string }) {
           placeholder="At least 8 characters"
         />
         <p className="text-xs text-gray-400">Share this with the learner so they can log in immediately. They can change it later.</p>
+      </div>
+      <div className="space-y-1.5">
+        <Label htmlFor="team">Team <span className="text-gray-400 font-normal">(optional)</span></Label>
+        <select
+          id="team"
+          value={teamId}
+          onChange={e => setTeamId(e.target.value)}
+          className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-1 focus:ring-blue-400"
+        >
+          <option value="">No team</option>
+          {teams.map(t => (
+            <option key={t.id} value={t.id}>{t.name}</option>
+          ))}
+        </select>
+        <p className="text-xs text-gray-400">Assign the learner to a team now, or leave as &ldquo;No team&rdquo; and set it later.</p>
       </div>
       <Button type="submit" className="w-full" disabled={loading} style={{ backgroundColor: '#2563eb' }}>
         {loading ? 'Creating…' : 'Create learner'}

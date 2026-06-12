@@ -35,10 +35,24 @@ export async function createLearner(data: {
   lastName: string
   email: string
   password: string
+  teamId?: string | null
 }): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
+
+  // Validate the team belongs to this trainer before assigning
+  let teamId: string | null = null
+  if (data.teamId) {
+    const { data: team } = await supabase
+      .from('academy_teams')
+      .select('id')
+      .eq('id', data.teamId)
+      .eq('trainer_id', user.id)
+      .single()
+    if (!team) return { error: 'Team not found' }
+    teamId = team.id
+  }
 
   const { createClient: createAdmin } = await import('@supabase/supabase-js')
   const admin = createAdmin(
@@ -61,11 +75,16 @@ export async function createLearner(data: {
     email: data.email,
     role: 'learner',
     trainer_id: user.id,
+    team_id: teamId,
   })
   if (profileErr) return { error: profileErr.message }
 
   revalidatePath('/trainer/learners')
   revalidatePath('/trainer')
+  if (teamId) {
+    revalidatePath('/trainer/teams')
+    revalidatePath(`/trainer/teams/${teamId}`)
+  }
   return {}
 }
 
