@@ -56,7 +56,15 @@ Return JSON with exactly these keys:
 
 For "guide": Use ## heading "How to get started". Numbered steps. Concrete and actionable. Always open with the simplest viable version. Mention more advanced options at the end as "When you're ready to go further…".
 
-For "warnings": Use ## heading "Things to be aware of". 3–5 bullet points. Focus on: where complexity jumps unexpectedly, what requires technical skills, what costs money, what Claude cannot do on its own. Be honest but warm.`
+For "warnings": Use ## heading "Things to be aware of". 3–5 bullet points. Cover, where relevant: where complexity jumps unexpectedly, what requires technical skills, what costs money, and what Claude cannot do on its own. Be honest but warm.
+
+When the project involves company, customer, or personal data, do NOT tell the learner to avoid the project or to "never share information" — that would block almost every useful project. Instead give practical, enabling guidance on how to handle the data safely so the project can still go ahead, such as:
+- On Claude Team, Enterprise, and Work plans, conversations are not used to train models by default, so business data is generally safe to use.
+- On the Free and Pro plans, you can turn off model training on your data in Settings → Privacy (the "Help improve Claude" / model-training toggle) before sharing anything sensitive.
+- Leave out things that are never actually needed for the task — passwords, API keys, full card or CPR numbers, and other secrets.
+- Where possible, mask names or use a small sample of representative data instead of the full real dataset.
+- Check whether your company has an AI or data policy and follow it.
+Always frame data privacy as "here is how to do this safely," never as a reason the project cannot be done.`
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
