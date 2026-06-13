@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { NewProjectButton } from '@/components/portal/new-project-button'
 import { MarkRead } from '@/components/portal/mark-read'
 import { UseTemplateButton } from '@/components/portal/use-template-button'
+import { ProjectsIntroModal } from '@/components/portal/projects-intro-modal'
 
 type Project = {
   id: string
@@ -113,7 +114,7 @@ export default async function ProjectsPage() {
 
   const { data: profile } = await supabase
     .from('academy_profiles')
-    .select('trainer_id')
+    .select('trainer_id, projects_read_at')
     .eq('id', user!.id)
     .single()
 
@@ -149,6 +150,7 @@ export default async function ProjectsPage() {
   return (
     <div className="space-y-10">
       <MarkRead section="projects" />
+      <ProjectsIntroModal show={profile?.projects_read_at == null} />
 
       {/* My projects */}
       <div className="space-y-6">
