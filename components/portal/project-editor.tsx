@@ -118,6 +118,19 @@ export function ProjectEditor({
   const [saved, setSaved] = useState(false)
   const [requestingTrainer, setRequestingTrainer] = useState(false)
 
+  // Snapshot of what's currently persisted, so we can tell when there are unsaved edits.
+  const [savedSnapshot, setSavedSnapshot] = useState({
+    title: project.title,
+    description: project.description,
+    guide: project.ai_guide,
+    warnings: project.ai_warnings,
+  })
+  const dirty =
+    title !== savedSnapshot.title ||
+    description !== savedSnapshot.description ||
+    guide !== savedSnapshot.guide ||
+    warnings !== savedSnapshot.warnings
+
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const scoreComplexity = useCallback(async (t: string, d: string) => {
@@ -145,6 +158,14 @@ export function ProjectEditor({
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
   }, [title, description, scoreComplexity])
 
+  // Browser-level guard: warn if the learner closes the tab / hits back with unsaved edits.
+  useEffect(() => {
+    if (!dirty) return
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = '' }
+    window.addEventListener('beforeunload', handler)
+    return () => window.removeEventListener('beforeunload', handler)
+  }, [dirty])
+
   async function handleSave() {
     setSaving(true)
     await saveProject(project.id, {
@@ -152,6 +173,7 @@ export function ProjectEditor({
       complexityScore: score, complexityLabel: label,
       aiGuide: guide, aiWarnings: warnings,
     })
+    setSavedSnapshot({ title, description, guide, warnings })
     setSaving(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 2000)
@@ -167,14 +189,17 @@ export function ProjectEditor({
         body: JSON.stringify({ title, description, mode: 'full' }),
       })
       const data = await res.json()
+      const nextGuide = data.guide ?? guide
+      const nextWarnings = data.warnings ?? warnings
       if (data.guide) setGuide(data.guide)
       if (data.warnings) setWarnings(data.warnings)
       if (data.score) { setScore(data.score); setLabel(data.label) }
       await saveProject(project.id, {
         title, description,
         complexityScore: data.score ?? score, complexityLabel: data.label ?? label,
-        aiGuide: data.guide ?? guide, aiWarnings: data.warnings ?? warnings,
+        aiGuide: nextGuide, aiWarnings: nextWarnings,
       })
+      setSavedSnapshot({ title, description, guide: nextGuide, warnings: nextWarnings })
     } finally {
       setAnalysisLoading(false)
     }
@@ -194,6 +219,11 @@ export function ProjectEditor({
     router.push('/portal/projects')
   }
 
+  function leaveToProjects() {
+    if (dirty && !confirm('You have unsaved changes that will be lost. Leave without saving?')) return
+    router.push('/portal/projects')
+  }
+
   const hasContent = description.trim().length > 0
   const hasFeedback = !!project.trainer_feedback
 
@@ -202,16 +232,38 @@ export function ProjectEditor({
       {/* Header — always full width */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <button onClick={() => router.push('/portal/projects')} className="text-sm text-gray-400 hover:text-gray-600 mb-2 flex items-center gap-1">
+          <button onClick={leaveToProjects} className="text-sm text-gray-400 hover:text-gray-600 mb-2 flex items-center gap-1">
             ← My projects
           </button>
           <h1 className="font-heading text-2xl font-bold text-gray-900">Project idea</h1>
         </div>
-        <div className="flex items-center gap-2 pt-7">
-          <button onClick={handleSave} disabled={saving} className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-50">
-            {saving ? 'Saving…' : saved ? '✓ Saved' : 'Save'}
-          </button>
-          <button onClick={handleDelete} className="text-xs px-3 py-1.5 rounded-lg border border-red-100 text-red-400 hover:bg-red-50">
+        <div className="flex items-center gap-2 pt-6">
+          {dirty ? (
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-lg text-white hover:opacity-90 disabled:opacity-60 transition-opacity"
+              style={{ backgroundColor: '#2563eb' }}
+            >
+              {saving ? (
+                <>
+                  <svg className="animate-spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg>
+                  Saving…
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  Save changes
+                </>
+              )}
+            </button>
+          ) : (
+            <span className="flex items-center gap-1.5 text-sm font-medium px-3 py-2 rounded-lg text-green-700 bg-green-50 border border-green-200">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              {saved ? 'Saved' : 'All changes saved'}
+            </span>
+          )}
+          <button onClick={handleDelete} className="text-xs px-3 py-2 rounded-lg border border-red-100 text-red-400 hover:bg-red-50">
             Delete
           </button>
         </div>
