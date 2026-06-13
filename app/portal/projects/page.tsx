@@ -55,6 +55,28 @@ const categoryMeta: Record<string, { title: string; blurb: string }> = {
 }
 const CATEGORY_ORDER = ['claude-project', 'add-context', 'build-skill']
 
+function CategoryIcon({ kind }: { kind: string }) {
+  if (kind === 'claude-project') {
+    return (
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" />
+      </svg>
+    )
+  }
+  if (kind === 'add-context') {
+    return (
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      </svg>
+    )
+  }
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+    </svg>
+  )
+}
+
 function fmt(dt: string) {
   return new Date(dt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })
 }
@@ -171,12 +193,21 @@ export default async function ProjectsPage() {
                 The best first project is one you finish this week — not the biggest idea you have.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 shrink-0">
-              {CATEGORY_ORDER.map(key => (
-                <span key={key} className="text-xs font-medium px-2.5 py-1 rounded-full border border-white/30" style={{ backgroundColor: 'rgba(255,255,255,0.12)' }}>
-                  {categoryMeta[key].title}
-                </span>
-              ))}
+            <div className="shrink-0">
+              <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#93c5fd' }}>
+                Examples of what you can build
+              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1.5 text-sm" style={{ color: '#dbeafe' }}>
+                {CATEGORY_ORDER.map((key, i) => (
+                  <span key={key} className="inline-flex items-center gap-2.5">
+                    {i > 0 && <span aria-hidden style={{ color: 'rgba(255,255,255,0.4)' }}>→</span>}
+                    <span className="inline-flex items-center gap-1.5">
+                      <CategoryIcon kind={key} />
+                      {categoryMeta[key].title}
+                    </span>
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
