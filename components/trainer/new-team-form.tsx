@@ -9,6 +9,7 @@ export function NewTeamForm() {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState('')
   const [welcome, setWelcome] = useState('')
+  const [academyName, setAcademyName] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
@@ -17,10 +18,10 @@ export function NewTeamForm() {
     if (!name.trim()) return
     setSaving(true)
     setError('')
-    const res = await createTeam({ name, welcomeMessage: welcome })
+    const res = await createTeam({ name, welcomeMessage: welcome, academyName })
     setSaving(false)
     if (res.error) { setError(res.error); return }
-    setName(''); setWelcome(''); setOpen(false)
+    setName(''); setWelcome(''); setAcademyName(''); setOpen(false)
     router.refresh()
   }
 
@@ -50,6 +51,20 @@ export function NewTeamForm() {
           required
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+      </div>
+
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-gray-700">
+          Academy name <span className="text-gray-400 font-normal">(optional — what learners see)</span>
+        </label>
+        <input
+          type="text"
+          value={academyName}
+          onChange={e => setAcademyName(e.target.value)}
+          placeholder="e.g. AI Academy for the EMT"
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <p className="text-xs text-gray-400">Leave blank to use the default &quot;Rune&apos;s AI Academy&quot;.</p>
       </div>
 
       <div className="space-y-1">

@@ -21,9 +21,20 @@ export default async function PortalLayout({ children }: { children: React.React
 
   const { data: profile } = await supabase
     .from('academy_profiles')
-    .select('first_name, last_name, avatar_url, trainer_id, projects_read_at, support_read_at, portal_read_at')
+    .select('first_name, last_name, avatar_url, trainer_id, team_id, projects_read_at, support_read_at, portal_read_at')
     .eq('id', user.id)
     .single()
+
+  // Per-team brand name (falls back to the default in the Sidebar when unset)
+  let brand: string | undefined
+  if (profile?.team_id) {
+    const { data: team } = await supabase
+      .from('academy_teams')
+      .select('academy_name')
+      .eq('id', profile.team_id)
+      .single()
+    brand = team?.academy_name?.trim() || undefined
+  }
 
   // Notification counts — projects and support in parallel
   const [{ count: projectsBadge }, { count: supportBadge }] = await Promise.all([
@@ -74,6 +85,7 @@ export default async function PortalLayout({ children }: { children: React.React
       <Sidebar
         items={navItems}
         title="Learner Portal"
+        brand={brand}
         user={profile ? { firstName: profile.first_name, lastName: profile.last_name, avatarUrl: profile.avatar_url } : undefined}
         profileHref="/portal/profile"
       />

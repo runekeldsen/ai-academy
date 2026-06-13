@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 export async function createTeam(data: {
   name: string
   welcomeMessage: string
+  academyName?: string
 }): Promise<{ error?: string; id?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -13,7 +14,12 @@ export async function createTeam(data: {
 
   const { data: team, error } = await supabase
     .from('academy_teams')
-    .insert({ name: data.name.trim(), welcome_message: data.welcomeMessage.trim(), trainer_id: user.id })
+    .insert({
+      name: data.name.trim(),
+      welcome_message: data.welcomeMessage.trim(),
+      academy_name: data.academyName?.trim() || null,
+      trainer_id: user.id,
+    })
     .select('id')
     .single()
   if (error) return { error: error.message }
@@ -25,6 +31,7 @@ export async function createTeam(data: {
 export async function updateTeam(id: string, data: {
   name: string
   welcomeMessage: string
+  academyName?: string
 }): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -32,7 +39,11 @@ export async function updateTeam(id: string, data: {
 
   const { error } = await supabase
     .from('academy_teams')
-    .update({ name: data.name.trim(), welcome_message: data.welcomeMessage.trim() })
+    .update({
+      name: data.name.trim(),
+      welcome_message: data.welcomeMessage.trim(),
+      academy_name: data.academyName?.trim() || null,
+    })
     .eq('id', id)
     .eq('trainer_id', user.id)
   if (error) return { error: error.message }

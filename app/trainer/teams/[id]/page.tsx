@@ -12,7 +12,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
 
   const { data: team } = await supabase
     .from('academy_teams')
-    .select('id, name, welcome_message')
+    .select('id, name, welcome_message, academy_name')
     .eq('id', id)
     .eq('trainer_id', user!.id)
     .single()
@@ -60,7 +60,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
       {/* Team details */}
       <section className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <h2 className="font-heading text-base font-semibold text-gray-800">Team details</h2>
-        <TeamEditForm teamId={id} name={team.name} welcomeMessage={team.welcome_message} />
+        <TeamEditForm teamId={id} name={team.name} welcomeMessage={team.welcome_message} academyName={team.academy_name ?? ''} />
       </section>
 
       {/* Sections */}

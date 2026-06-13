@@ -9,7 +9,7 @@ import { useState } from 'react'
 type NavItem = { label: string; href: string; badge?: number }
 type UserInfo = { firstName: string; lastName: string; avatarUrl: string | null }
 
-export function Sidebar({ items, title, user, profileHref }: { items: NavItem[]; title: string; user?: UserInfo; profileHref?: string }) {
+export function Sidebar({ items, title, brand = "Rune's AI Academy", user, profileHref }: { items: NavItem[]; title: string; brand?: string; user?: UserInfo; profileHref?: string }) {
   const pathname = usePathname()
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -80,7 +80,7 @@ export function Sidebar({ items, title, user, profileHref }: { items: NavItem[];
           </svg>
         </button>
         <Link href="/" className="flex flex-col leading-none">
-          <span className="font-heading text-white font-bold text-base">Rune's AI Academy</span>
+          <span className="font-heading text-white font-bold text-base">{brand}</span>
           <span className="text-[11px] mt-0.5" style={{ color: '#38bdf8' }}>{title}</span>
         </Link>
         {user && (
@@ -129,7 +129,7 @@ export function Sidebar({ items, title, user, profileHref }: { items: NavItem[];
         {/* Brand header */}
         <div className="px-5 py-6 border-b border-white/10 flex items-center justify-between">
           <Link href="/" className="block">
-            <span className="font-heading text-white font-bold text-lg tracking-wide">Rune's AI Academy</span>
+            <span className="font-heading text-white font-bold text-lg tracking-wide">{brand}</span>
             <span className="block text-xs mt-0.5" style={{ color: '#38bdf8' }}>{title}</span>
           </Link>
           <button

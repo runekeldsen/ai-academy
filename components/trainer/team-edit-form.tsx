@@ -3,13 +3,15 @@
 import { useState } from 'react'
 import { updateTeam } from '@/actions/teams'
 
-export function TeamEditForm({ teamId, name: initialName, welcomeMessage: initialWelcome }: {
+export function TeamEditForm({ teamId, name: initialName, welcomeMessage: initialWelcome, academyName: initialAcademyName }: {
   teamId: string
   name: string
   welcomeMessage: string
+  academyName: string
 }) {
   const [name, setName] = useState(initialName)
   const [welcome, setWelcome] = useState(initialWelcome)
+  const [academyName, setAcademyName] = useState(initialAcademyName)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
@@ -18,7 +20,7 @@ export function TeamEditForm({ teamId, name: initialName, welcomeMessage: initia
     e.preventDefault()
     if (!name.trim()) return
     setSaving(true); setError(''); setSaved(false)
-    const res = await updateTeam(teamId, { name, welcomeMessage: welcome })
+    const res = await updateTeam(teamId, { name, welcomeMessage: welcome, academyName })
     setSaving(false)
     if (res.error) { setError(res.error); return }
     setSaved(true)
@@ -36,6 +38,20 @@ export function TeamEditForm({ teamId, name: initialName, welcomeMessage: initia
           required
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+      </div>
+
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-gray-700">
+          Academy name <span className="text-gray-400 font-normal">(what learners in this team see as the platform name)</span>
+        </label>
+        <input
+          type="text"
+          value={academyName}
+          onChange={e => setAcademyName(e.target.value)}
+          placeholder="Rune's AI Academy"
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <p className="text-xs text-gray-400">e.g. &quot;AI Academy for the EMT&quot;. Leave blank to use the default &quot;Rune&apos;s AI Academy&quot;.</p>
       </div>
 
       <div className="space-y-1">
