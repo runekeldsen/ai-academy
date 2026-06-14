@@ -16,10 +16,11 @@ type Promo = {
   youtubeId?: string
 }
 
-function FeaturedShell({ kind, title, description, children }: {
+function FeaturedShell({ kind, title, description, onHide, children }: {
   kind: string
   title: string
   description?: string | null
+  onHide: () => void
   children: React.ReactNode
 }) {
   return (
@@ -36,6 +37,13 @@ function FeaturedShell({ kind, title, description, children }: {
           ★ Featured by your trainer
         </span>
         <span className="ml-auto text-[11px] font-medium px-2 py-0.5 rounded-full bg-white text-blue-700 border border-blue-200">{kind}</span>
+        <button
+          onClick={onHide}
+          className="text-[11px] font-medium text-gray-400 hover:text-gray-600 transition-colors"
+          aria-label="Hide this featured item"
+        >
+          Hide
+        </button>
       </div>
       <div className="px-5 pb-5 pt-2 space-y-3">
         <div>
@@ -48,7 +56,7 @@ function FeaturedShell({ kind, title, description, children }: {
   )
 }
 
-function PodcastPromo({ promo }: { promo: Promo }) {
+function PodcastPromo({ promo, onHide }: { promo: Promo; onHide: () => void }) {
   const started = useRef(false)
   const completed = useRef(false)
 
@@ -56,7 +64,6 @@ function PodcastPromo({ promo }: { promo: Promo }) {
     if (!started.current) {
       started.current = true
       if (promo.resourceId) recordResourceView(promo.resourceId)
-      dismissPromotion(promo.id)
     }
   }
   function handleEnded() {
@@ -67,7 +74,7 @@ function PodcastPromo({ promo }: { promo: Promo }) {
   }
 
   return (
-    <FeaturedShell kind="Podcast" title={promo.title} description={promo.description}>
+    <FeaturedShell kind="Podcast" title={promo.title} description={promo.description} onHide={onHide}>
       <audio
         controls
         src={promo.src}
@@ -80,7 +87,7 @@ function PodcastPromo({ promo }: { promo: Promo }) {
   )
 }
 
-function VideoPromo({ promo }: { promo: Promo }) {
+function VideoPromo({ promo, onHide }: { promo: Promo; onHide: () => void }) {
   const [playing, setPlaying] = useState(false)
   const tracked = useRef(false)
 
@@ -89,12 +96,11 @@ function VideoPromo({ promo }: { promo: Promo }) {
     if (!tracked.current) {
       tracked.current = true
       if (promo.resourceId) recordResourceView(promo.resourceId)
-      dismissPromotion(promo.id)
     }
   }
 
   return (
-    <FeaturedShell kind="Video" title={promo.title} description={promo.description}>
+    <FeaturedShell kind="Video" title={promo.title} description={promo.description} onHide={onHide}>
       <div className="rounded-lg overflow-hidden border border-blue-200">
         {playing ? (
           <div className="relative" style={{ paddingTop: '56.25%' }}>
@@ -131,18 +137,17 @@ function VideoPromo({ promo }: { promo: Promo }) {
   )
 }
 
-function ModulePromo({ promo }: { promo: Promo }) {
+function ModulePromo({ promo, onHide }: { promo: Promo; onHide: () => void }) {
   const router = useRouter()
   const [busy, setBusy] = useState(false)
 
-  async function open() {
+  function open() {
     setBusy(true)
-    await dismissPromotion(promo.id)
     router.push(promo.href!)
   }
 
   return (
-    <FeaturedShell kind="Module" title={promo.title} description={promo.description}>
+    <FeaturedShell kind="Module" title={promo.title} description={promo.description} onHide={onHide}>
       <button
         onClick={open}
         disabled={busy}
@@ -156,13 +161,21 @@ function ModulePromo({ promo }: { promo: Promo }) {
 }
 
 export function PromotionBanner({ promotions }: { promotions: Promo[] }) {
-  if (promotions.length === 0) return null
+  const [visible, setVisible] = useState(promotions)
+
+  async function hide(id: string) {
+    setVisible(v => v.filter(p => p.id !== id))
+    await dismissPromotion(id)
+  }
+
+  if (visible.length === 0) return null
+
   return (
     <div className="space-y-4">
-      {promotions.map(p =>
-        p.kind === 'Podcast' ? <PodcastPromo key={p.id} promo={p} />
-          : p.kind === 'Video' ? <VideoPromo key={p.id} promo={p} />
-            : <ModulePromo key={p.id} promo={p} />
+      {visible.map(p =>
+        p.kind === 'Podcast' ? <PodcastPromo key={p.id} promo={p} onHide={() => hide(p.id)} />
+          : p.kind === 'Video' ? <VideoPromo key={p.id} promo={p} onHide={() => hide(p.id)} />
+            : <ModulePromo key={p.id} promo={p} onHide={() => hide(p.id)} />
       )}
     </div>
   )
