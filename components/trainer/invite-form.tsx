@@ -75,7 +75,7 @@ export function InviteForm({ origin, teams }: { origin: string; teams: Team[] })
           </div>
           <p className="text-xs text-gray-400 mt-1">
             {sendWelcome
-              ? 'A welcome email with these login details has been sent to the learner.'
+              ? 'A welcome email with a “set your password” link has been sent to the learner. These credentials work as a fallback if you need to share them manually.'
               : 'Share these credentials with the learner. You can also send them a login email from the Learners page when ready.'}
           </p>
         </div>
@@ -173,8 +173,8 @@ export function InviteForm({ origin, teams }: { origin: string; teams: Team[] })
           className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
         />
         <span className="text-sm text-gray-700">
-          Email login details to the learner
-          <span className="block text-xs text-gray-400">Sends a welcome email with their email and first-use password.</span>
+          Email a “set your password” link to the learner
+          <span className="block text-xs text-gray-400">Sends a welcome email with a secure link so they can set their own password.</span>
         </span>
       </label>
       <Button type="submit" className="w-full" disabled={loading} style={{ backgroundColor: '#2563eb' }}>

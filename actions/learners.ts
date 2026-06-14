@@ -82,27 +82,28 @@ export async function createLearner(data: {
   })
   if (profileErr) return { error: profileErr.message }
 
-  // Welcome email with login details (best-effort — never blocks creation)
+  // Welcome email with a "set your password" link (best-effort — never blocks creation)
   if (data.sendWelcome !== false) {
     try {
-      const { sendEmail, renderEmail } = await import('@/lib/email')
-      const brand = academyName || "Rune's AI Academy"
-      const loginUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
-      const html = renderEmail({
-        heading: brand,
-        bodyHtml: `
-          <p style="margin:0 0 16px;">Hi ${data.firstName},</p>
-          <p style="margin:0 0 16px;">You've been given access to <strong>${brand}</strong>. Use the details below to log in:</p>
-          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px;background-color:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;width:100%;">
-            <tr><td style="padding:14px 16px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#334155;">
-              <div style="margin-bottom:6px;"><strong>Email:</strong> ${data.email}</div>
-              <div><strong>Password:</strong> ${data.password}</div>
-            </td></tr>
-          </table>
-          <p style="margin:16px 0 0;color:#64748b;font-size:13px;">You can change your password once you're logged in.</p>`,
-        cta: loginUrl ? { label: 'Log in', href: loginUrl } : undefined,
+      const { data: linkData } = await admin.auth.admin.generateLink({
+        type: 'recovery',
+        email: data.email,
+        options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback?next=/auth/reset-password` },
       })
-      await sendEmail({ to: data.email, subject: `Your login for ${brand}`, html })
+      const actionLink = linkData?.properties?.action_link
+      if (actionLink) {
+        const { sendEmail, renderEmail } = await import('@/lib/email')
+        const brand = academyName || "Rune's AI Academy"
+        const html = renderEmail({
+          heading: brand,
+          bodyHtml: `
+            <p style="margin:0 0 16px;">Hi ${data.firstName},</p>
+            <p style="margin:0 0 16px;">You've been given access to <strong>${brand}</strong>. Set your password to get started — your sign-in email is <strong>${data.email}</strong>.</p>
+            <p style="margin:0;color:#64748b;font-size:13px;">This link expires after a while. If it stops working, use “Forgot password?” on the login page.</p>`,
+          cta: { label: 'Set your password', href: actionLink },
+        })
+        await sendEmail({ to: data.email, subject: `Set your password for ${brand}`, html })
+      }
     } catch {
       // ignore — learner is created regardless of email delivery
     }
