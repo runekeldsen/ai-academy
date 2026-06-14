@@ -282,8 +282,12 @@
 
 /* Print isolation for the Tips & Tricks cheat sheet: drop the chrome
    (sidebar, mobile bar, print button) and reset the main layout padding so
-   the printed page is a clean single sheet. */
+   the printed page is a clean single landscape A4 sheet. */
 @media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
   aside,
   header,
   .no-print {
@@ -295,5 +299,8 @@
   }
   body {
     background: #fff !important;
+  }
+  .cheat-sheet {
+    max-width: none !important;
   }
 }

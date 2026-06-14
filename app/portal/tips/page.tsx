@@ -17,7 +17,7 @@ const groups: Group[] = [
   {
     heading: 'Stay in control of context',
     tips: [
-      { title: 'Use /clear to switch topics', body: 'Starting something unrelated? Clear the chat so old context doesn\'t bleed in.' },
+      { title: 'Start a new chat to switch topics', body: 'Beginning something unrelated? Open a new chat so old context doesn\'t bleed in.' },
       { title: 'One task per conversation', body: 'Keep a chat focused; start a fresh one for a new job.' },
       { title: 'Correct course early', body: 'If it drifts, stop and redirect straight away rather than at the end.' },
       { title: 'Re-anchor long chats', body: 'Ask "Summarise what we\'ve decided so far" to get back on track.' },
@@ -26,17 +26,28 @@ const groups: Group[] = [
   {
     heading: 'Work step by step',
     tips: [
+      { title: 'Plan first, then write', body: 'Ask "Plan your answer in 3 bullets first, then write it" for stronger long answers.' },
       { title: 'Start rough, then refine', body: 'Get a draft first, then ask for specific changes.' },
       { title: 'Ask "why"', body: 'Request its reasoning to check it\'s on the right track.' },
       { title: 'Turn plans into checklists', body: 'Ask for numbered steps you can tick off as you go.' },
       { title: 'Reuse what works', body: 'Found a prompt that nails it? Save it and use it again.' },
     ],
   },
+  {
+    heading: 'Get more from Claude',
+    tips: [
+      { title: 'Set your preferences once', body: 'In Settings, tell Claude your name, role, audience and tone — it applies to every chat.' },
+      { title: 'Use Projects for recurring work', body: 'Attach files and pin instructions in a Project so they load in every conversation.' },
+      { title: 'Build with Artifacts', body: 'Ask for a doc, chart or slide — it opens in a side panel. Highlight a part and say "change this".' },
+      { title: 'Give it your files', body: 'Upload or paste the document or data instead of describing it.' },
+      { title: 'Turn on web search', body: 'Switch on web search for anything recent or fact-based.' },
+    ],
+  },
 ]
 
 export default function TipsPage() {
   return (
-    <div className="cheat-sheet max-w-4xl space-y-6">
+    <div className="cheat-sheet max-w-6xl space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="font-heading text-2xl font-bold text-gray-900">Claude Cheat Sheet</h1>
@@ -47,7 +58,7 @@ export default function TipsPage() {
         <PrintButton />
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 print:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4 print:grid-cols-4 print:gap-3">
         {groups.map(group => (
           <section key={group.heading} className="bg-white rounded-xl border border-gray-200 p-5 print:border-gray-300 break-inside-avoid">
             <h2 className="font-heading text-sm font-bold uppercase tracking-wide mb-3" style={{ color: '#2563eb' }}>
