@@ -19,6 +19,22 @@ export async function updateProfile(firstName: string, lastName: string): Promis
   return {}
 }
 
+export async function updateAvatar(avatarUrl: string | null): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { error } = await supabase
+    .from('academy_profiles')
+    .update({ avatar_url: avatarUrl })
+    .eq('id', user.id)
+
+  if (error) return { error: error.message }
+  revalidatePath('/portal', 'layout')
+  revalidatePath('/trainer', 'layout')
+  return {}
+}
+
 export async function updateEmailNudges(enabled: boolean): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

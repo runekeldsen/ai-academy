@@ -11,7 +11,7 @@ export default async function PortalProfilePage() {
 
   const { data: profile } = await supabase
     .from('academy_profiles')
-    .select('first_name, last_name, trainer_id, team_id, email_nudges')
+    .select('first_name, last_name, trainer_id, team_id, email_nudges, avatar_url')
     .eq('id', user!.id)
     .single()
 
@@ -32,6 +32,8 @@ export default async function PortalProfilePage() {
       <ProfileForm
         firstName={profile?.first_name ?? ''}
         lastName={profile?.last_name ?? ''}
+        userId={user!.id}
+        avatarUrl={profile?.avatar_url ?? null}
       />
     </div>
   )

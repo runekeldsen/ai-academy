@@ -7,7 +7,7 @@ export default async function TrainerProfilePage() {
 
   const { data: profile } = await supabase
     .from('academy_profiles')
-    .select('first_name, last_name')
+    .select('first_name, last_name, avatar_url')
     .eq('id', user!.id)
     .single()
 
@@ -20,6 +20,8 @@ export default async function TrainerProfilePage() {
       <ProfileForm
         firstName={profile?.first_name ?? ''}
         lastName={profile?.last_name ?? ''}
+        userId={user!.id}
+        avatarUrl={profile?.avatar_url ?? null}
       />
     </div>
   )
