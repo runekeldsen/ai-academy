@@ -39,9 +39,12 @@ function FeaturedShell({ kind, title, description, onHide, children }: {
         <span className="ml-auto text-[11px] font-medium px-2 py-0.5 rounded-full bg-white text-blue-700 border border-blue-200">{kind}</span>
         <button
           onClick={onHide}
-          className="text-[11px] font-medium text-gray-400 hover:text-gray-600 transition-colors"
+          className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-white text-gray-600 border border-gray-300 hover:bg-gray-100 hover:text-gray-800 hover:border-gray-400 transition-colors"
           aria-label="Hide this featured item"
         >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 6 6 18M6 6l12 12" />
+          </svg>
           Hide
         </button>
       </div>
