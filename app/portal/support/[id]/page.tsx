@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { ThreadReply } from '@/components/support/thread-reply'
+import { ThreadAutoRefresh } from '@/components/support/thread-auto-refresh'
 
 type Message = {
   id: string
@@ -46,6 +47,7 @@ export default async function ThreadPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="space-y-5 max-w-2xl">
+      {thread.status !== 'resolved' && <ThreadAutoRefresh />}
       <div className="flex items-center justify-between">
         <Link href="/portal/support?tab=trainer" className="text-sm font-medium flex items-center gap-1 hover:underline" style={{ color: '#2563eb' }}>
           ← Back to support

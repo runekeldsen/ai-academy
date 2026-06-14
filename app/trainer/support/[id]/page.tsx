@@ -69,6 +69,32 @@ export default function TrainerThreadPage() {
     load()
   }, [id])
 
+  // Poll for new learner replies while the tab is visible, without manual refresh.
+  useEffect(() => {
+    const fetchMessages = async () => {
+      if (document.visibilityState !== 'visible') return
+      const supabase = createClient()
+      const { data: msgs } = await supabase
+        .from('academy_support_messages')
+        .select('id, role, content, image_url, created_at, sender:sender_id(id, first_name, last_name)')
+        .eq('thread_id', id)
+        .order('created_at', { ascending: true })
+      if (!msgs) return
+      const next = msgs as unknown as Message[]
+      setMessages(prev =>
+        prev.length === next.length && prev[prev.length - 1]?.id === next[next.length - 1]?.id
+          ? prev
+          : next
+      )
+    }
+    const interval = setInterval(fetchMessages, 5000)
+    document.addEventListener('visibilitychange', fetchMessages)
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', fetchMessages)
+    }
+  }, [id])
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
