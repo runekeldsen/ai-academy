@@ -88,5 +88,7 @@ export async function dismissPromotion(promotionId: string): Promise<void> {
       { promotion_id: promotionId, learner_id: user.id },
       { onConflict: 'promotion_id,learner_id', ignoreDuplicates: true },
     )
-  revalidatePath('/portal')
+  // No revalidatePath here on purpose: revalidating /portal would re-render and
+  // unmount the player while the learner is mid-playback. The dismissal is
+  // recorded, so the promo simply won't reappear on the next portal load.
 }
