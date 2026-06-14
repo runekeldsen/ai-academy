@@ -4,6 +4,7 @@ import { TeamEditForm } from '@/components/trainer/team-edit-form'
 import { DeleteTeamButton } from '@/components/trainer/delete-team-button'
 import { TeamSectionPicker } from '@/components/trainer/team-section-picker'
 import { TeamLearnerManager } from '@/components/trainer/team-learner-manager'
+import { TeamBroadcastForm } from '@/components/trainer/team-broadcast-form'
 
 export default async function TeamDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -91,6 +92,17 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
           teamLearners={teamLearners.map(l => ({ id: l.id, first_name: l.first_name, last_name: l.last_name, email: l.email }))}
           unassignedLearners={unassignedLearners.map(l => ({ id: l.id, first_name: l.first_name, last_name: l.last_name, email: l.email }))}
         />
+      </section>
+
+      {/* Broadcast */}
+      <section className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+        <div>
+          <h2 className="font-heading text-base font-semibold text-gray-800">Message this team</h2>
+          <p className="mt-1 text-sm text-gray-500">
+            Send an email to everyone in this team — e.g. a new-content announcement.
+          </p>
+        </div>
+        <TeamBroadcastForm teamId={id} recipientCount={teamLearners.length} />
       </section>
     </div>
   )

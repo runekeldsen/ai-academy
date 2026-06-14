@@ -16,6 +16,7 @@ export function InviteForm({ origin, teams }: { origin: string; teams: Team[] })
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [teamId, setTeamId] = useState('')
+  const [sendWelcome, setSendWelcome] = useState(true)
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -27,7 +28,7 @@ export function InviteForm({ origin, teams }: { origin: string; teams: Team[] })
     setLoading(true)
     setError('')
 
-    const result = await createLearner({ firstName, lastName, email, password, teamId: teamId || null })
+    const result = await createLearner({ firstName, lastName, email, password, teamId: teamId || null, sendWelcome })
 
     if (result.error) {
       setError(result.error)
@@ -73,13 +74,15 @@ export function InviteForm({ origin, teams }: { origin: string; teams: Team[] })
             </div>
           </div>
           <p className="text-xs text-gray-400 mt-1">
-            Share these credentials with the learner. You can also send them a login email from the Learners page when ready.
+            {sendWelcome
+              ? 'A welcome email with these login details has been sent to the learner.'
+              : 'Share these credentials with the learner. You can also send them a login email from the Learners page when ready.'}
           </p>
         </div>
 
         <div className="flex gap-3">
           <Button
-            onClick={() => { setSuccess(false); setFirstName(''); setLastName(''); setEmail(''); setPassword(''); setTeamId(''); setShowPassword(false) }}
+            onClick={() => { setSuccess(false); setFirstName(''); setLastName(''); setEmail(''); setPassword(''); setTeamId(''); setSendWelcome(true); setShowPassword(false) }}
             variant="outline"
           >
             Add another
@@ -162,6 +165,18 @@ export function InviteForm({ origin, teams }: { origin: string; teams: Team[] })
         </select>
         <p className="text-xs text-gray-400">Assign the learner to a team now, or leave as &ldquo;No team&rdquo; and set it later.</p>
       </div>
+      <label className="flex items-start gap-2.5 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={sendWelcome}
+          onChange={e => setSendWelcome(e.target.checked)}
+          className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        />
+        <span className="text-sm text-gray-700">
+          Email login details to the learner
+          <span className="block text-xs text-gray-400">Sends a welcome email with their email and first-use password.</span>
+        </span>
+      </label>
       <Button type="submit" className="w-full" disabled={loading} style={{ backgroundColor: '#2563eb' }}>
         {loading ? 'Creating…' : 'Create learner'}
       </Button>
