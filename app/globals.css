@@ -279,3 +279,21 @@
     transform: none;
   }
 }
+
+/* Print isolation for the Tips & Tricks cheat sheet: drop the chrome
+   (sidebar, mobile bar, print button) and reset the main layout padding so
+   the printed page is a clean single sheet. */
+@media print {
+  aside,
+  header,
+  .no-print {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+  body {
+    background: #fff !important;
+  }
+}

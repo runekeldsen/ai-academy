@@ -7,6 +7,7 @@ const baseNavItems = [
   { label: 'Resources', href: '/portal/resources' },
   { label: 'Test your skills', href: '/portal/tests' },
   { label: 'My projects', href: '/portal/projects' },
+  { label: 'Tips & Tricks', href: '/portal/tips' },
   { label: 'Support', href: '/portal/support' },
 ]
 
