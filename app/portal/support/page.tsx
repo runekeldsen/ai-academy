@@ -26,7 +26,7 @@ export default async function SupportPage({
 }: {
   searchParams: Promise<{ tab?: string }>
 }) {
-  const { tab = 'ai' } = await searchParams
+  const { tab: tabParam } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -48,6 +48,10 @@ export default async function SupportPage({
     content: m.content,
     imageUrl: m.image_url,
   }))
+
+  // Default to the trainer tab when there's an active (unresolved) case; otherwise AI help.
+  const hasActiveCase = ((threads as Thread[]) ?? []).some(t => t.status !== 'resolved')
+  const tab = tabParam ?? (hasActiveCase ? 'trainer' : 'ai')
 
   return (
     <div className="space-y-6 max-w-3xl">
