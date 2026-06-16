@@ -20,6 +20,35 @@ export type LearnerOverview = {
   flag: CohortFlag
 }
 
+export type CohortStats = {
+  activeThisWeek: number
+  completionsThisWeek: number
+  avgCompletionPct: number
+}
+
+export type ModuleStat = {
+  moduleId: string
+  title: string
+  sectionTitle: string
+  startersCount: number
+  completersCount: number
+  totalLearners: number
+}
+
+export type ActivityItem = {
+  learnerId: string
+  learnerName: string
+  moduleTitle: string
+  completedAt: string
+}
+
+export type CohortResult = {
+  learners: LearnerOverview[]
+  stats: CohortStats
+  moduleStats: ModuleStat[]
+  recentActivity: ActivityItem[]
+}
+
 type AnswerRecord = { score: number }
 
 const flagPriority: Record<CohortFlag, number> = {
@@ -34,14 +63,19 @@ const flagPriority: Record<CohortFlag, number> = {
 export async function getCohortOverview(
   supabase: SupabaseClient,
   trainerId: string
-): Promise<LearnerOverview[]> {
+): Promise<CohortResult> {
   const { data: learners } = await supabase
     .from('academy_profiles')
     .select('id, first_name, last_name, team_id')
     .eq('trainer_id', trainerId)
     .eq('role', 'learner')
 
-  if (!learners?.length) return []
+  if (!learners?.length) return {
+    learners: [],
+    stats: { activeThisWeek: 0, completionsThisWeek: 0, avgCompletionPct: 0 },
+    moduleStats: [],
+    recentActivity: [],
+  }
   const learnerIds = learners.map(l => l.id)
   const teamIds = [...new Set(learners.map(l => l.team_id).filter(Boolean))] as string[]
 
@@ -180,9 +214,73 @@ export async function getCohortOverview(
     }
   })
 
-  return overviews.sort((a, b) => {
+  const sortedLearners = overviews.sort((a, b) => {
     const p = flagPriority[a.flag] - flagPriority[b.flag]
     if (p !== 0) return p
     return (a.lastActiveAt ?? '') < (b.lastActiveAt ?? '') ? -1 : 1
   })
+
+  // cohort-level stats
+  const activeThisWeek = overviews.filter(l => l.lastActiveAt && daysAgo(l.lastActiveAt) <= 7).length
+  const completionsThisWeek = ((progressRows ?? []) as { completed_at: string | null }[])
+    .filter(p => p.completed_at && daysAgo(p.completed_at) <= 7).length
+  const learnersWithModules = overviews.filter(l => l.total > 0)
+  const avgCompletionPct = learnersWithModules.length > 0
+    ? Math.round(learnersWithModules.reduce((sum, l) => sum + (l.completed / l.total) * 100, 0) / learnersWithModules.length)
+    : 0
+
+  // module-level stats
+  const startersByModule = new Map<string, Set<string>>()
+  const completersByModule = new Map<string, Set<string>>()
+  for (const p of (progressRows ?? []) as { learner_id: string; module_id: string; started_at: string | null; completed_at: string | null }[]) {
+    if (p.started_at) {
+      if (!startersByModule.has(p.module_id)) startersByModule.set(p.module_id, new Set())
+      startersByModule.get(p.module_id)!.add(p.learner_id)
+    }
+    if (p.completed_at) {
+      if (!completersByModule.has(p.module_id)) completersByModule.set(p.module_id, new Set())
+      completersByModule.get(p.module_id)!.add(p.learner_id)
+    }
+  }
+
+  type RawSectionForStats = { id: string; title: string; academy_modules: { id: string; title: string; published: boolean }[] }
+  const moduleStats: ModuleStat[] = []
+  for (const s of ((sections as unknown as RawSectionForStats[]) ?? [])) {
+    for (const m of (s.academy_modules ?? []).filter(m => m.published)) {
+      moduleStats.push({
+        moduleId: m.id,
+        title: m.title,
+        sectionTitle: s.title,
+        startersCount: startersByModule.get(m.id)?.size ?? 0,
+        completersCount: completersByModule.get(m.id)?.size ?? 0,
+        totalLearners: learners.length,
+      })
+    }
+  }
+  // sort fewest completers first (drop-off focus)
+  moduleStats.sort((a, b) => a.completersCount - b.completersCount)
+
+  // recent activity feed
+  const learnerNameMap = new Map(learners.map(l => [l.id, `${l.first_name} ${l.last_name}`]))
+  const moduleTitleMap = new Map<string, string>()
+  for (const s of ((sections as unknown as RawSectionForStats[]) ?? [])) {
+    for (const m of s.academy_modules ?? []) moduleTitleMap.set(m.id, m.title)
+  }
+  const recentActivity: ActivityItem[] = ((progressRows ?? []) as { learner_id: string; module_id: string; completed_at: string | null }[])
+    .filter(p => p.completed_at)
+    .sort((a, b) => (b.completed_at! > a.completed_at! ? 1 : -1))
+    .slice(0, 10)
+    .map(p => ({
+      learnerId: p.learner_id,
+      learnerName: learnerNameMap.get(p.learner_id) ?? 'Learner',
+      moduleTitle: moduleTitleMap.get(p.module_id) ?? 'Module',
+      completedAt: p.completed_at!,
+    }))
+
+  return {
+    learners: sortedLearners,
+    stats: { activeThisWeek, completionsThisWeek, avgCompletionPct },
+    moduleStats,
+    recentActivity,
+  }
 }

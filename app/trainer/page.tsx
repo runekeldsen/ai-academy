@@ -30,14 +30,9 @@ export default async function TrainerDashboard() {
     .eq('id', user!.id)
     .single()
 
-  const cohort = await getCohortOverview(supabase, user!.id)
+  const { learners, stats, moduleStats, recentActivity } = await getCohortOverview(supabase, user!.id)
 
-  const { data: authStatus } = await supabase
-    .rpc('get_user_auth_status', { user_ids: cohort.map(l => l.id) })
-
-  const confirmedCount = authStatus?.filter((l: { id: string; confirmed_at: string | null }) => l.confirmed_at).length ?? 0
-  const pendingCount = cohort.length - confirmedCount
-  const attentionCount = cohort.filter(l => l.flag === 'quiet' || l.flag === 'stalled').length
+  const attentionCount = learners.filter(l => l.flag === 'quiet' || l.flag === 'stalled').length
 
   return (
     <div className="space-y-8">
@@ -51,15 +46,15 @@ export default async function TrainerDashboard() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <p className="text-sm font-medium text-gray-500">Total learners</p>
-          <p className="mt-2 text-3xl font-heading font-bold text-gray-900">{cohort.length}</p>
+          <p className="mt-2 text-3xl font-heading font-bold text-gray-900">{learners.length}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <p className="text-sm font-medium text-gray-500">Active accounts</p>
-          <p className="mt-2 text-3xl font-heading font-bold" style={{ color: '#2563eb' }}>{confirmedCount}</p>
+          <p className="text-sm font-medium text-gray-500">Active this week</p>
+          <p className="mt-2 text-3xl font-heading font-bold" style={{ color: '#2563eb' }}>{stats.activeThisWeek}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <p className="text-sm font-medium text-gray-500">Pending invites</p>
-          <p className="mt-2 text-3xl font-heading font-bold text-amber-500">{pendingCount}</p>
+          <p className="text-sm font-medium text-gray-500">Completions this week</p>
+          <p className="mt-2 text-3xl font-heading font-bold text-indigo-600">{stats.completionsThisWeek}</p>
         </div>
         <div className="bg-white rounded-xl border border-gray-200 p-6">
           <p className="text-sm font-medium text-gray-500">Needs attention</p>
@@ -79,7 +74,7 @@ export default async function TrainerDashboard() {
             Manage learners
           </a>
         </div>
-        {!cohort.length ? (
+        {!learners.length ? (
           <div className="px-6 py-10 text-center">
             <p className="text-sm text-gray-400">No learners yet.</p>
             <a href="/trainer/invite" className="mt-3 inline-block text-sm font-medium hover:underline" style={{ color: '#2563eb' }}>
@@ -100,7 +95,7 @@ export default async function TrainerDashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {cohort.map(l => {
+                {learners.map(l => {
                   const pct = l.total > 0 ? Math.round((l.completed / l.total) * 100) : 0
                   const flag = flagStyle[l.flag]
                   return (
@@ -151,6 +146,109 @@ export default async function TrainerDashboard() {
               </tbody>
             </table>
           </div>
+        )}
+      </div>
+
+      {moduleStats.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200">
+          <div className="px-6 py-4 border-b border-gray-100">
+            <h2 className="font-heading text-base font-semibold text-gray-800">Module engagement</h2>
+            <p className="mt-0.5 text-xs text-gray-400">Modules with the lowest completion are listed first — these are your biggest drop-off points.</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-gray-400 border-b border-gray-100">
+                  <th className="px-6 py-3 font-medium">Module</th>
+                  <th className="px-4 py-3 font-medium min-w-[160px]">Started</th>
+                  <th className="px-4 py-3 font-medium min-w-[160px]">Completed</th>
+                  <th className="px-6 py-3 font-medium">Rate</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {moduleStats.map(m => {
+                  const startPct = m.totalLearners > 0 ? Math.round((m.startersCount / m.totalLearners) * 100) : 0
+                  const completePct = m.totalLearners > 0 ? Math.round((m.completersCount / m.totalLearners) * 100) : 0
+                  const rateBadge =
+                    m.startersCount === 0
+                      ? { label: 'None', className: 'bg-gray-50 text-gray-400 border-gray-100' }
+                      : completePct >= 70
+                        ? { label: 'High', className: 'bg-green-50 text-green-700 border-green-200' }
+                        : completePct >= 40
+                          ? { label: 'Medium', className: 'bg-amber-50 text-amber-700 border-amber-200' }
+                          : { label: 'Low', className: 'bg-red-50 text-red-700 border-red-200' }
+                  return (
+                    <tr key={m.moduleId} className="hover:bg-gray-50/60">
+                      <td className="px-6 py-4">
+                        <p className="font-medium text-gray-800">{m.title}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{m.sectionTitle}</p>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-24 rounded-full bg-gray-100 overflow-hidden">
+                            <div className="h-full rounded-full" style={{ width: `${startPct}%`, backgroundColor: '#2563eb' }} />
+                          </div>
+                          <span className="text-xs text-gray-500 whitespace-nowrap">{m.startersCount}/{m.totalLearners}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-24 rounded-full bg-gray-100 overflow-hidden">
+                            <div
+                              className="h-full rounded-full"
+                              style={{ width: `${completePct}%`, backgroundColor: completePct === 100 ? '#16a34a' : '#2563eb' }}
+                            />
+                          </div>
+                          <span className="text-xs text-gray-500 whitespace-nowrap">{m.completersCount}/{m.totalLearners}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium border ${rateBadge.className}`}>
+                          {rateBadge.label}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      <div className="bg-white rounded-xl border border-gray-200">
+        <div className="px-6 py-4 border-b border-gray-100">
+          <h2 className="font-heading text-base font-semibold text-gray-800">Recent completions</h2>
+          <p className="mt-0.5 text-xs text-gray-400">The last 10 module completions across your cohort.</p>
+        </div>
+        {recentActivity.length === 0 ? (
+          <div className="px-6 py-8 text-center">
+            <p className="text-sm text-gray-400">No completions yet — check back once learners start their journey.</p>
+          </div>
+        ) : (
+          <ul className="divide-y divide-gray-100">
+            {recentActivity.map((item, i) => {
+              const initials = item.learnerName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+              return (
+                <li key={i} className="px-6 py-3 flex items-center gap-3 hover:bg-gray-50/60">
+                  <div
+                    className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
+                    style={{ backgroundColor: '#2563eb' }}
+                  >
+                    {initials}
+                  </div>
+                  <span className="flex-1 text-sm text-gray-700 min-w-0">
+                    <a href={`/trainer/learners/${item.learnerId}`} className="font-medium text-gray-900 hover:underline">
+                      {item.learnerName}
+                    </a>
+                    {' '}completed{' '}
+                    <span className="text-gray-700">{item.moduleTitle}</span>
+                  </span>
+                  <span className="text-xs text-gray-400 whitespace-nowrap shrink-0">{relativeTime(item.completedAt)}</span>
+                </li>
+              )
+            })}
+          </ul>
         )}
       </div>
     </div>
