@@ -439,24 +439,47 @@ its SKILL.md before starting so the branding and layout stay consistent.
   },
   'effective-meetings': {
     title: 'Effective Meetings — Your Playbook',
-    subtitle: 'Turn raw meeting notes into an action log and clean minutes.',
-    content: `This is the full walkthrough for turning meeting notes into minutes and an action log — from creating the Project through to turning it into a Skill you can run with one command. The pre-session gave you a taste; this is the real thing. And the real point of this guide isn't the exact prompts below — it's watching the output get better as you put more thought into what you ask for. That's the skill worth taking away: the more you invest in instructions, context and format, the more repeatable and higher-quality the result. Everything below is deliberately ordered to make that visible.
+    subtitle: 'Turn raw notes or a Teams transcript into an action log and clean minutes.',
+    content: `This is the full walkthrough for turning meeting notes — or a recording transcript — into minutes and an action log, from creating the Project through to turning it into a Skill you can run with one command. The pre-session gave you a taste; this is the real thing. And the real point of this guide isn't the exact prompts below — it's watching the output get better as you put more thought into what you ask for. That's the skill worth taking away: the more you invest in instructions, context and format, the more repeatable and higher-quality the result. Everything below is deliberately ordered to make that visible.
 
 ### Step 1: Create your Project
 
-In the sidebar, click **Projects → New project**. Name it after the meeting series — e.g. "[Committee name] Notes" — so it's obvious which recurring meeting it belongs to. This is the one-time container everything else in this guide lives inside: your instructions, your raw notes, and every set of minutes you generate.
+In the sidebar, click **Projects → New project**. Name it after the meeting series — e.g. "[Committee name] Notes" — so it's obvious which recurring meeting it belongs to. This is the one-time container everything else in this guide lives inside: your instructions, your notes, and every set of minutes you generate.
 
-### Step 2: Start rough — see the ceiling
+### Step 2: Capture the raw material — notes or a transcript
 
-Try the laziest possible version first, so you have something to compare against later:
+Right after the meeting, get something real into the Project. There are two ways to do this.
+
+**Option A: Your own notes.** Paste or upload whatever you scribbled during the call — bullet points, half-sentences, whatever. Don't tidy them up first; that's the job you're about to hand off.
+
+**Option B: A Teams recording transcript.** If the meeting was recorded in Microsoft Teams, the transcript is a far richer input than your own notes could ever be — it captures everything said, not just what you managed to jot down. To get it:
+
+1. Open the meeting in Teams — from the calendar invite, or **Chat → the meeting thread**.
+2. Find the recording and click **Open transcript** (the transcript icon sits next to it).
+3. Click **Download** to save it as a Word document, or select all and copy the text straight out of the transcript panel.
+
+Upload the transcript to the Project instead of — or alongside — your own notes.
+
+One caution: transcripts are messy — cross-talk, filler words, and speaker labels that go wrong when someone's on a shared mic or hasn't renamed themselves. Tell Claude what it's dealing with once you fold this into Step 4:
+
+\`\`\`
+Sometimes I'll give you a raw Teams transcript instead of my own notes — it'll
+include speaker labels, filler words, and cross-talk. Extract only what
+matters: decisions, action items, and key discussion points, and ignore the
+small talk.
+\`\`\`
+
+### Step 3: Start rough — see the ceiling
+
+Try the laziest possible instruction against the notes or transcript you just added, so you have something to compare against later:
 
 \`\`\`
 Help me write up meeting notes.
 \`\`\`
 
-It'll produce *something* — but generic. Claude doesn't know whether you want minutes, an action log, or both, what "owner and deadline" convention you use, or how to handle a note that's ambiguous about who's responsible. It's guessing on every dimension at once. That's the ceiling of a lazy prompt, and it's low.
+It'll produce *something* — but generic, even with real material to work from. Claude doesn't know whether you want minutes, an action log, or both, what "owner and deadline" convention you use, or how to handle a note that's ambiguous about who's responsible. It's guessing on every dimension at once. That's the ceiling of a lazy prompt, and it's low.
 
-### Step 3: Turn it into instructions you'll reuse every time
+### Step 4: Turn it into instructions you'll reuse every time
 
 Now give it what it was missing — the recurring shape of the output, a convention for owners and deadlines, and what to do when something's unclear:
 
@@ -469,24 +492,46 @@ flag it rather than guessing.
 
 Set this as your **Project instructions**, not a one-off message. This is the highest-leverage step in the whole playbook — you write it once, and it pays out after every meeting.
 
-### Step 4: Capture the raw notes
+### Step 5: Load the Project with context beyond this meeting's notes
 
-Right after the meeting, paste or upload your raw notes into the Project — bullet points, half-sentences, whatever you scribbled during the call. Don't tidy them up first; that's the job you're about to hand off.
+This is where the real leverage sits. Your notes or transcript only capture what happened in the room — they don't capture everything a good minute-taker actually knows. Add background material to the Project once, and every future meeting benefits from it automatically:
 
-### Step 5: Decide the deliverable
+| Add this | Why it helps |
+|---|---|
+| The previous meeting's action log | Claude can carry forward unfinished items and tell "is this new, or a repeat?" |
+| This meeting's agenda | Claude knows the expected structure, and can flag if an agenda item never actually got discussed |
+| Steering committee material or pre-read decks | Background so shorthand in your notes ("the Q3 numbers", "the vendor issue") actually means something |
+| Participant list with names and roles | Claude can map "Finance will look into it" to the actual accountable person, instead of guessing or leaving it blank |
 
-Minutes and an action log work fine as a Word document you can paste straight into an email — no need for anything fancier. The one exception is reporting into a steering committee that expects a slide; that's the case worth a PowerPoint version, ideally built by a shared template Skill rather than reformatted by hand each time. See Step 17.
+A few more worth adding once you see the pattern:
 
-### Step 6: Run it
+- **A past set of minutes you're happy with**, as a style reference — Claude matches the tone and structure instead of inventing its own each time.
+- **A glossary of recurring shorthand** — project codenames, acronyms, anything a newcomer to the room wouldn't follow.
+- **The committee's terms of reference** — what this forum actually has authority to decide, so Claude can tell a real decision from "options were discussed."
+- **A short org/reporting-lines note** — helps disambiguate ownership when a note names a team rather than a person.
+
+Once you've added these, update your instructions to tell Claude to actually use them:
+
+\`\`\`
+Use the participant list to work out who's the likely owner when a note only
+mentions a role or team, and check last meeting's action log for anything
+that's carried over unresolved.
+\`\`\`
+
+### Step 6: Decide the deliverable
+
+Minutes and an action log work fine as a Word document you can paste straight into an email — no need for anything fancier. The one exception is reporting into a steering committee that expects a slide; that's the case worth a PowerPoint version, ideally built by a shared template Skill rather than reformatted by hand each time. See Step 18.
+
+### Step 7: Run it
 
 \`\`\`
 From these notes, build the action log (owner, action, due date) and the
 minutes, and give me both as a Word document.
 \`\`\`
 
-Compare this to Step 2. Same underlying question, completely different quality of answer — because of what you invested upstream.
+Compare this to Step 3. Same underlying question, completely different quality of answer — because of what you invested upstream.
 
-### Step 7: Verify before you trust it
+### Step 8: Verify before you trust it
 
 Treat the result like a first draft from someone who wasn't in the room — useful, but worth checking before it goes out. This is the part that actually matters: understanding *why* it assigned what it assigned.
 
@@ -495,12 +540,13 @@ Show me which line in my notes each action item came from.
 \`\`\`
 
 \`\`\`
-Which owners or deadlines did you have to guess at rather than read directly?
+Which owners did you assign based on my notes directly, versus inferred from
+the participant list or someone's usual role?
 \`\`\`
 
-If a guess is wrong, correct it — Claude will fix it rather than defend a wrong attribution, but only if you check.
+The second kind needs a closer look. Inferring someone's likely job is a bigger leap than reading an explicit assignment — don't let it slide just because it's plausible. If a guess is wrong, correct it; Claude will fix it rather than defend a wrong attribution, but only if you check.
 
-### Step 8: Push back and drill down
+### Step 9: Push back and drill down
 
 \`\`\`
 Which of these action items look most likely to slip, based on how they're worded?
@@ -510,7 +556,7 @@ Which of these action items look most likely to slip, based on how they're worde
 Are any of these actions actually duplicates of something from a previous meeting?
 \`\`\`
 
-### Step 9: Use Claude as a sounding board, not just a doer
+### Step 10: Use Claude as a sounding board, not just a doer
 
 Instead of only issuing instructions, ask it to weigh in:
 
@@ -526,7 +572,7 @@ are worded?
 
 This is often where the real value shows up — not in the first answer, but in what surfaces when you ask it to critique its own work.
 
-### Step 10: Pull in outside context with web search
+### Step 11: Pull in outside context with web search
 
 Less central here than in the other two playbooks, but useful occasionally — say explicitly when you want Claude to search:
 
@@ -535,7 +581,7 @@ Search for how other logistics or shipping companies structure recurring
 steering committee action logs, if there's a pattern worth adopting.
 \`\`\`
 
-### Step 11: Add a visual status summary
+### Step 12: Add a visual status summary
 
 \`\`\`
 Add a simple chart showing how many actions are open, in progress, or done,
@@ -544,7 +590,7 @@ compared with the last two meetings.
 
 Content first, polish second — get the log right before asking for a chart on top of it.
 
-### Step 12: Reformat for a different audience
+### Step 13: Reformat for a different audience
 
 \`\`\`
 Draft a short follow-up message I can send to the group with the minutes
@@ -553,18 +599,18 @@ and action log attached.
 
 Before your next meeting on the same topic, ask Claude to check what's outstanding from the last action log — that's your agenda starter.
 
-### Step 13: Turn it into a Skill so it repeats itself
+### Step 14: Turn it into a Skill so it repeats itself
 
-This is the payoff for everything above. Once the recipe works — instructions, notes format, output format, verification habit — package it so you never re-explain it again:
+This is the payoff for everything above. Once the recipe works — instructions, context library, notes format, output format, verification habit — package it so you never re-explain it again:
 
 \`\`\`
 Turn this into a Skill I can run after every meeting on this topic — same
-instructions, same output, one command to kick it off.
+instructions, same context, same output, one command to kick it off.
 \`\`\`
 
 Skills work like the ones from the pre-session basics module: type \`/\` in a new chat and yours will be there.
 
-### Step 14: Open and read the Agent SOP
+### Step 15: Open and read the Agent SOP
 
 When Claude builds you a Skill, it writes a procedure behind it — the **Agent SOP** — laying out exactly what the Skill checks, asks, and does each time it runs. Open it and read it, the way you'd read a colleague's checklist before trusting them to run something unsupervised.
 
@@ -575,13 +621,13 @@ carried over unfinished from the previous meeting.
 
 The stronger the SOP, the more consistently the Skill performs — every time, without you in the room.
 
-### Step 15: Make the Skill ask for what it's missing
+### Step 16: Make the Skill ask for what it's missing
 
 A good Skill doesn't guess when something's missing — it asks:
 
 \`\`\`
-If I run this Skill without pasting in notes, have it ask me to provide
-them before continuing.
+If I run this Skill without pasting in notes or a transcript, have it ask me
+to provide one before continuing.
 \`\`\`
 
 You can go further and have it interview you for anything the notes alone can't resolve:
@@ -589,12 +635,13 @@ You can go further and have it interview you for anything the notes alone can't 
 \`\`\`
 Before finishing, have the Skill ask me whether any flagged ambiguous-owner
 actions should be assigned to someone specific, and fold my answer into the
-final action log.
+final action log. If the participant list hasn't been touched in a couple of
+months, have it check that's still accurate before relying on it.
 \`\`\`
 
 That turns the Skill from a report generator into something closer to a structured interview: it does the mechanical write-up, then asks you for the judgment calls only a person can make.
 
-### Step 16: Save, update, and share it
+### Step 17: Save, update, and share it
 
 When Claude finishes building a Skill, it will typically offer you a save (and sometimes a download) option — take it. Once saved, it's there under \`/\` next time. To change it later, don't rebuild from scratch:
 
@@ -605,7 +652,7 @@ overdue from the previous meeting into this one's log.
 
 If your team is on a Team or Enterprise plan, a working Skill can usually be shared so colleagues use the same one instead of rebuilding it themselves.
 
-### Step 17: Nest skills inside skills
+### Step 18: Nest skills inside skills
 
 A Skill doesn't have to solve every part of the problem itself — it can call another Skill as a step. If someone on the team has already built and refined a Skill that produces DFDS-branded slides, your meetings Skill doesn't need to solve formatting itself:
 
@@ -618,6 +665,7 @@ standards.
 > **The moves that carry to any project — not just this one:**
 >
 > - Give Claude the recurring shape of the task, not just an isolated question
+> - Load background context beyond the immediate input — history, reference material, and who's involved, not just the raw notes
 > - Name the audience and the exact format you want back
 > - Verify the first answer before you trust it — ask *how* it got there
 > - Don't stop at the first draft — drill in, push back
@@ -629,6 +677,6 @@ standards.
 > - Share what works instead of leaving everyone to rebuild it
 > - Let Skills call other Skills — a well-built narrow Skill becomes a building block, not something rebuilt every time
 >
-> **Specific to this one:** raw notes as the recurring input, an owner/action/due-date convention, and Word as the default output.`,
+> **Specific to this one:** raw notes or a Teams transcript as the recurring input, a growing library of context (previous action logs, agenda, pre-read material, participants and roles), an owner/action/due-date convention, and Word as the default output.`,
   },
 }
