@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { ModuleContent } from '@/components/portal/module-content'
 import { TopicChoiceForm } from '@/components/portal/topic-choice-form'
 import { setModuleCompleted } from '@/actions/progress'
-import { dismissPreSession, type Topic } from '@/actions/preSession'
+import { dismissPreSession, redoPreSession, type Topic } from '@/actions/preSession'
 
 type Mod = {
   id: string
@@ -32,6 +32,8 @@ export function PreSessionStepper({
   const [finished, setFinished] = useState(firstIncomplete === -1 && !!initialTopic)
   const [topic, setTopic] = useState<Topic | null>(initialTopic)
   const [saving, setSaving] = useState(false)
+  const [confirmingRedo, setConfirmingRedo] = useState(false)
+  const [redoing, setRedoing] = useState(false)
 
   async function handleSkip() {
     await dismissPreSession()
@@ -53,6 +55,13 @@ export function PreSessionStepper({
   async function handleFinish() {
     await dismissPreSession()
     router.push('/portal')
+  }
+
+  async function handleRedo() {
+    setRedoing(true)
+    await redoPreSession()
+    // Full reload so every module's progress and the topic choice re-fetch clean
+    window.location.href = '/portal/pre-session'
   }
 
   if (modules.length === 0) {
@@ -84,6 +93,34 @@ export function PreSessionStepper({
         >
           Go to normal AI Training →
         </button>
+
+        <div>
+          {confirmingRedo ? (
+            <div className="inline-flex items-center gap-2">
+              <span className="text-xs text-gray-500">This clears your progress and topic choice. Sure?</span>
+              <button
+                onClick={handleRedo}
+                disabled={redoing}
+                className="text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
+              >
+                {redoing ? 'Resetting…' : 'Yes, start over'}
+              </button>
+              <button
+                onClick={() => setConfirmingRedo(false)}
+                className="text-xs text-gray-400 hover:underline"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setConfirmingRedo(true)}
+              className="text-xs font-medium text-gray-400 hover:text-gray-600"
+            >
+              Redo the session
+            </button>
+          )}
+        </div>
       </div>
     )
   }
