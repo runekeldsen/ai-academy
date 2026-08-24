@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { createTemplate, updateTemplate, deleteTemplate, type TemplateInput } from '@/actions/templates'
+import { createTemplate, updateTemplate, deleteTemplate } from '@/actions/templates'
+import type { TemplateInput } from '@/lib/templateTypes'
 
 export type TemplateRow = {
   id: string

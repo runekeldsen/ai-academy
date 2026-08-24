@@ -2,17 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-
-export type TemplateInput = {
-  title: string
-  description: string
-  complexityScore: number
-  complexityLabel: string
-  category: string | null
-  recommendedFirst: boolean
-  sortOrder: number
-  moduleId: string | null
-}
+import type { TemplateInput } from '@/lib/templateTypes'
 
 function toRow(data: TemplateInput) {
   return {
