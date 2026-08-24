@@ -11,7 +11,7 @@ export const TOPIC_GUIDES: Record<Topic, Guide> = {
   'financial-review': {
     title: 'Monthly Financial Review — Your Playbook',
     subtitle: 'The routine you\'ll run every month after the live session.',
-    content: `This is the step-by-step you'll follow after the live session, every month. You built the Project shell in the pre-session module — here's how to put it to work and keep using it going forward.
+    content: `This is the step-by-step you'll follow after the live session, every month. You built the Project shell in the pre-session module — here's how to put it to work, understand what it gives you, and eventually make it repeat itself.
 
 ### Step 1: Set your Project instructions once
 
@@ -29,17 +29,42 @@ Always end with one recommended action or question to raise.
 
 Upload the current budget vs. actuals file to the Project. If you have last month's file already in there from before, replace it — Claude should only see the latest baseline, not a stack of old ones.
 
-### Step 3: Run the review
+### Step 3: Choose your output format
 
-In a new chat inside the Project, start with:
+Decide what you want out the other end before you run anything. A chat reply is fine for a quick sanity check, but for anything you'll actually share, ask for a proper document.
+
+**Word, not PowerPoint, is usually the right call.** Claude produces a clean, well-structured Word document reliably. Matching DFDS's exact PowerPoint template and branding is a different problem — Claude will guess at layout, fonts and slide structure, and you'll spend more time fixing formatting than the review saved you. Save PowerPoint for when you're presenting live and genuinely need DFDS's slide branding; use Word for the review itself.
+
+Add this to your prompt — or fold it into your Project instructions in Step 1 if you always want it:
 
 \`\`\`
-Please run this month's review against the file I've uploaded.
+Give me the review as a Word document, not just chat text.
 \`\`\`
 
-### Step 4: Push back and drill down
+### Step 4: Run the review
 
-Treat the first answer as a starting point, not the final word. Good follow-ups:
+In a new chat inside the Project:
+
+\`\`\`
+Please run this month's review against the file I've uploaded, and give me
+the result as a Word document.
+\`\`\`
+
+### Step 5: Check it before you trust it
+
+Treat the first result the way you'd treat a first draft from a junior analyst — useful, but worth checking before it goes anywhere. This is the part that actually matters: understanding *why* it says what it says, not just reading the bullets.
+
+\`\`\`
+Show me exactly which rows in the spreadsheet support this bullet point.
+\`\`\`
+
+\`\`\`
+Walk me through how you calculated that percentage change.
+\`\`\`
+
+If an answer doesn't hold up, say so — Claude will recalculate rather than defend a wrong number, but only if you check.
+
+### Step 6: Push back and drill down
 
 \`\`\`
 Drill into the line item that moved the most — what's driving that change?
@@ -49,17 +74,39 @@ Drill into the line item that moved the most — what's driving that change?
 Is this a one-off or part of a trend over the last few months?
 \`\`\`
 
-### Step 5: Package it for your update
+### Step 7: Add visuals once the structure is right
 
-Once you're happy with the analysis, ask Claude to reformat it for whoever needs to see it:
+Get the content right first, then make it easier to scan. Once you're happy with the analysis:
+
+\`\`\`
+Add a simple bar chart showing the line items that moved most, and a trend
+line for the top 2 metrics over the last 3 months.
+\`\`\`
+
+Asking for visuals after the content is settled — not before — means you're not re-explaining chart requirements every time you tweak the numbers underneath.
+
+### Step 8: Package it for your update
+
+For a quick message rather than the full document:
 
 \`\`\`
 Turn this into 5 bullet points I can paste directly into my update to the board.
 \`\`\`
 
-### Step 6: Make it a habit
+### Step 9: Turn it into a Skill so it repeats itself
 
-Next month: swap in the new file, ask the same opening question, and compare how the conversation goes. If the answers feel off, it's usually the instructions that need a tweak — not the file.`,
+Once the recipe feels right — instructions, file, format, visuals — you don't need to re-explain it every month. Ask Claude to package it as a Skill:
+
+\`\`\`
+Turn this into a Skill I can run every month — same instructions, same
+output format, one command to kick it off.
+\`\`\`
+
+Skills work like the ones from the pre-session basics module: type \`/\` in a new chat and yours will be there, ready to run against this month's file.
+
+### Step 10: Make it a habit
+
+Next month: swap in the new file, and either revisit this Project or run your new Skill. If the answers feel off, it's usually the instructions that need a tweak — not the file.`,
   },
   'strategy-review': {
     title: 'Strategy Review Across Documents — Your Playbook',
