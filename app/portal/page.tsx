@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
 import { sendEmail, renderEmail } from '@/lib/email'
 import Link from 'next/link'
 import { MarkRead } from '@/components/portal/mark-read'
@@ -12,6 +13,7 @@ import { getMotivation } from '@/lib/achievements'
 import { GrowthCard } from '@/components/portal/achievement-badges'
 import { PromotionBanner } from '@/components/portal/promotion-banner'
 import { PreSessionBanner } from '@/components/portal/pre-session-banner'
+import { PRE_SESSION_DISMISS_COOKIE } from '@/lib/preSessionCookie'
 
 const difficultyStyle: Record<string, string> = {
   Beginner:     'bg-green-50 text-green-700 border-green-200',
@@ -25,7 +27,7 @@ export default async function LearnerPortal() {
 
   const { data: profile } = await supabase
     .from('academy_profiles')
-    .select('first_name, last_name, trainer_id, team_id, welcomed_at, first_login_at, pre_session_dismissed, academy_teams(name, welcome_message, academy_name, pre_session_section_id)')
+    .select('first_name, last_name, trainer_id, team_id, welcomed_at, first_login_at, academy_teams(name, welcome_message, academy_name, pre_session_section_id)')
     .eq('id', user!.id)
     .single()
 
@@ -33,7 +35,13 @@ export default async function LearnerPortal() {
   const team = (Array.isArray(teamRaw) ? teamRaw[0] : teamRaw) as
     { name: string; welcome_message: string; academy_name: string | null; pre_session_section_id: string | null } | null ?? null
 
-  if (team?.pre_session_section_id && !profile?.pre_session_dismissed) {
+  // Session-scoped: every fresh app open sends EMT straight to prep. A visit-scoped
+  // cookie (set by "Go to normal AI Training") lets them browse normally for the
+  // rest of that session without looping back — a banner alone is too easy to miss.
+  const cookieStore = await cookies()
+  const dismissedThisSession = cookieStore.has(PRE_SESSION_DISMISS_COOKIE)
+
+  if (team?.pre_session_section_id && !dismissedThisSession) {
     redirect('/portal/pre-session')
   }
 

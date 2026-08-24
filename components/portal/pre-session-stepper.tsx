@@ -66,6 +66,11 @@ export function PreSessionStepper({
     window.location.href = '/portal/pre-session'
   }
 
+  function handleTryAnother() {
+    setIndex(modules.length - 1)
+    setFinished(false)
+  }
+
   if (modules.length === 0) {
     return (
       <div className="max-w-xl mx-auto text-center space-y-3 py-16">
@@ -102,7 +107,14 @@ export function PreSessionStepper({
           </Link>
         )}
 
-        <div>
+        <div className="flex items-center justify-center gap-3 flex-wrap">
+          <button
+            onClick={handleTryAnother}
+            className="px-5 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"
+            style={{ backgroundColor: '#2563eb' }}
+          >
+            Try another project
+          </button>
           <button
             onClick={handleFinish}
             className="px-5 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"

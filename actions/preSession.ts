@@ -2,7 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { cookies } from 'next/headers'
 import { TOPICS, type Topic } from '@/lib/topicGuides'
+import { PRE_SESSION_DISMISS_COOKIE } from '@/lib/preSessionCookie'
 
 export async function chooseTopic(topic: Topic): Promise<{ error?: string }> {
   if (!TOPICS.includes(topic)) return { error: 'Invalid topic' }
@@ -29,11 +31,10 @@ export async function dismissPreSession(): Promise<{ error?: string }> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Unauthorized' }
 
-  const { error } = await supabase
-    .from('academy_profiles')
-    .update({ pre_session_dismissed: true })
-    .eq('id', user.id)
-  if (error) return { error: error.message }
+  // Session cookie (no maxAge) — lets "Go to normal AI Training" stick for this
+  // visit, but a fresh browser session (next login) always lands back on prep.
+  const cookieStore = await cookies()
+  cookieStore.set(PRE_SESSION_DISMISS_COOKIE, '1', { path: '/' })
 
   revalidatePath('/portal')
   revalidatePath('/portal/pre-session')
