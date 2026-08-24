@@ -241,7 +241,7 @@ In the sidebar, click **Projects → New project**. Call it something like "Stra
 Try the laziest possible version first, so you have something to compare against later:
 
 \`\`\`
-Help me pull together a strategy summary from these documents.
+Help me pull together a strategy summary.
 \`\`\`
 
 It'll produce *something* — but generic. Claude has no idea who it's for, what to prioritise when sources disagree, how deep to go, or what shape the answer should take. It's guessing on every dimension at once. That's the ceiling of a lazy prompt, and it's low.
@@ -450,7 +450,7 @@ In the sidebar, click **Projects → New project**. Name it after the meeting se
 Try the laziest possible version first, so you have something to compare against later:
 
 \`\`\`
-Help me write up these meeting notes.
+Help me write up meeting notes.
 \`\`\`
 
 It'll produce *something* — but generic. Claude doesn't know whether you want minutes, an action log, or both, what "owner and deadline" convention you use, or how to handle a note that's ambiguous about who's responsible. It's guessing on every dimension at once. That's the ceiling of a lazy prompt, and it's low.
