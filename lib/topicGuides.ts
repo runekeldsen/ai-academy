@@ -229,190 +229,232 @@ Rather than asking Claude to freehand DFDS's branding from scratch every time, s
   },
   'strategy-review': {
     title: 'Strategy Review Across Documents — Your Playbook',
-    subtitle: 'Turn scattered documents and research into one clear brief.',
-    content: `This is the full walkthrough for pulling together a strategy review — from creating the Project through to turning it into a Skill you can run with one command. The pre-session gave you a taste; this is the real thing. And the real point of this guide isn't the exact prompts below — it's watching the output get better as you put more thought into what you ask for. That's the skill worth taking away: the more you invest in instructions, context and format, the more repeatable and higher-quality the result. Everything below is deliberately ordered to make that visible.
+    subtitle: 'Critique, strengthen, and pressure-test a strategy using proven frameworks.',
+    content: `This is the full walkthrough for reviewing strategy work — from creating the Project through to turning it into a Skill you can run with one command. The pre-session gave you a taste; this is the real thing. And the real point of this guide isn't the exact prompts below — it's watching the output get better as you put more thought into what you ask for. That's the skill worth taking away: the more you invest in instructions, context and format, the more repeatable and higher-quality the result. Everything below is deliberately ordered to make that visible.
 
 ### Step 1: Create your Project
 
-In the sidebar, click **Projects → New project**. Call it something like "Strategy Reviews" — a name that'll make sense the next time you need to pull one together. This is the one-time container everything else in this guide lives inside: your instructions, your source documents, and every synthesis you run.
+In the sidebar, click **Projects → New project**. Name it for what you're reviewing — "DFDS Guiding Star Review" or "Nordic Ferry Strategy Review" both work — since the same Project shell works whether you're reviewing something company-wide or one specific market's strategy. This is the one-time container everything else in this guide lives inside.
 
-### Step 2: Gather your source material
+### Step 2: Gather source material
 
-Upload everything relevant to the Project at once — internal reports, competitor analysis, board decks, market notes. If you want Claude to pull in outside research too, say so explicitly; it won't assume.
+Upload whatever's relevant to the strategy you're reviewing — and be deliberate about the mix, since a review that only sees internal reports will only ever produce an internal-report-shaped opinion:
+
+- **Financial data** — budgets, forecasts, unit economics for the business the strategy covers
+- **Market data** — size, growth, segment trends, wherever relevant
+- **Customer data** — research, feedback, churn or win-loss, anything showing what customers actually do and say
+- **Competitor and industry material** — reports, analyst notes, competitor moves
+- **Proposals** — if someone else in the organisation has submitted one or more strategic plays for this same problem, upload those too; Step 9 covers scoring them against each other
+
+One more thing worth naming up front: this Project works at any altitude — it could be reviewing DFDS's overall guiding star, or something as specific as the transport product strategy for one market. Say which in your instructions in Step 4. The review approach doesn't change; what "good" looks like does.
 
 ### Step 3: Start rough — see the ceiling
 
-Try the laziest possible version first, against the documents you just uploaded, so you have something to compare against later:
+Try the laziest possible version first, against the material you just uploaded, so you have something to compare against later:
 
 \`\`\`
-Help me pull together a strategy summary from these documents.
+Review this strategy and tell me what you think.
 \`\`\`
 
-It'll produce *something* — but generic, even with real material to work from. Claude has no idea who it's for, what to prioritise when sources disagree, how deep to go, or what shape the answer should take. It's guessing on every dimension at once. That's the ceiling of a lazy prompt, and it's low.
+It'll produce *something* — but generic. Claude doesn't know whether you're reviewing an existing strategy or scoring a proposal, what "good" means for this specific business, or which audience the output needs to convince. It's guessing on every dimension at once. That's the ceiling of a lazy prompt, and it's low.
 
 ### Step 4: Turn it into instructions you'll reuse every time
 
-Now give it what it was missing — the recurring shape of the task, how to handle disagreement, the audience, and the standard it should hold itself to:
+Give it what it was missing: which of two modes this review is, and a real framework to apply instead of vague judgment.
+
+**If you're reviewing a strategy that already exists** — DFDS's guiding star, or a live product or market strategy — use Simons' Seven Strategy Questions, a well-established framework for stress-testing a live strategy:
 
 \`\`\`
-You're helping me synthesise strategy material for DFDS. I'll upload several
-documents at a time — reports, decks, notes — and may ask you to pull in
-outside research too. Your job is to find the through-line: what's
-consistent, what conflicts, and what's missing. Write for a senior
-management audience — direct, no fluff, and always cite which document a
-claim came from.
+You're helping me review [the strategy]. Structure your review around Simons'
+Seven Strategy Questions: who is the primary customer, what tradeoffs does
+the strategy make for them, what performance variables does it track, what
+boundaries has it set, how does it generate creative tension, how committed
+is the organisation to delivering it together, and what strategic
+uncertainty is least addressed. For each, tell me what's strong, what's
+weak, and one concrete way to improve it.
 \`\`\`
 
-Set this as your **Project instructions**, not a one-off message. This is the highest-leverage step in the whole playbook — you write it once, and it pays out every time you run a synthesis.
+**If you're evaluating one or more proposed strategic plays** — someone's submitted an option, or a few — use the SFA framework (Suitability, Feasibility, Acceptability), the standard model for scoring strategic options:
+
+\`\`\`
+You're helping me evaluate proposed strategic plays for [the topic]. Score
+each one against Suitability (does it fit the situation and our
+objectives), Feasibility (can we actually execute it with our resources
+and capabilities), and Acceptability (is the expected risk and return
+acceptable to our stakeholders). Be specific about what evidence in the
+uploaded material supports or undermines each score.
+\`\`\`
+
+Set whichever applies as your **Project instructions**, not a one-off message. This is the highest-leverage step in the whole playbook — you write it once, and it applies to every review you run in this Project.
 
 ### Step 5: Decide the deliverable
 
-Strategy work usually needs two different things: a written brief to read beforehand, and a slide version for the room. Decide which before you run anything.
+Strategy work usually needs two different things: a written review to read and react to, and a slide version for presenting the outcome. Decide which before you run anything.
 
 \`\`\`
-Give me the result as a one-page Word brief I can read before the meeting,
-not just chat text.
+Give me the result as a Word document I can read and comment on, not just
+chat text.
 \`\`\`
 
-If you also need slides and DFDS branding matters, lean on a dedicated PowerPoint skill for that rather than asking this Project to freehand the template — Claude can build the deck, but it won't know DFDS's exact layout and branding unless that's fed in separately. See Step 17.
+If you also need slides and DFDS branding matters, lean on a dedicated PowerPoint skill for that rather than asking this Project to freehand the template — Claude can build the deck, but it won't know DFDS's exact layout and branding unless that's fed in separately. See Step 18.
 
-### Step 6: Run the synthesis
+### Step 6: Run the review
 
 \`\`\`
-Based on everything uploaded, what are the 3–4 things I need to know before
-our next strategy discussion? Give me the result as a Word document, and
-note where the documents agree, where they disagree, and anything missing.
+Run the review against everything I've uploaded, following the framework in
+my instructions, and give me the result as a Word document.
 \`\`\`
 
-Compare this to Step 3. Same underlying question, completely different quality of answer — because of what you invested upstream.
+Compare this to Step 3. Same underlying question — "review this" — but a completely different quality of answer, because of what you invested upstream. Notice too that this isn't just a summary: you asked for what's strong, what's weak, and concrete ways to improve it. That's the difference between reviewing a strategy and just describing one.
 
 ### Step 7: Verify before you trust it
 
-Treat the result like a first draft from a junior analyst — useful, but worth checking before it goes anywhere. This is the part that actually matters: understanding *why* it says what it says.
+Treat the result like a first draft from a sharp but new analyst — useful, but worth checking before it goes anywhere. This is the part that actually matters: understanding *why* it landed on each judgment.
 
 \`\`\`
-Show me exactly where in the documents each of these claims comes from.
-\`\`\`
-
-\`\`\`
-Which of these points came from a single source versus multiple agreeing sources?
-\`\`\`
-
-If a claim doesn't hold up under that check, say so — Claude will revise rather than defend a weak citation, but only if you check.
-
-### Step 8: Pressure-test the summary
-
-Don't accept the first answer as the final one:
-
-\`\`\`
-Play devil's advocate — what's the strongest case against this conclusion?
+For each weakness you flagged, show me exactly which document or data point
+led you to that conclusion.
 \`\`\`
 
 \`\`\`
-Which of these points are you least confident about, and why?
+Which of your scores or judgments are you least confident about, and why?
 \`\`\`
 
-### Step 9: Use Claude as a sounding board, not just a doer
+If a judgment doesn't hold up under that check, say so — Claude will revise rather than defend a weak read, but only if you check.
 
-So far every prompt has told Claude what to *do*. It's also useful as something to think *with*. Instead of issuing instructions, ask it to weigh in:
+### Step 8: Push back and pressure-test the suggestions
 
-\`\`\`
-Give me 2–3 different ways to frame this for the board. Which would you
-recommend, and why?
-\`\`\`
+Don't accept the first set of improvement suggestions as the final word:
 
 \`\`\`
-Review this against how a well-structured strategy memo should be built.
-What's missing, or what would make it stronger?
+Which of your suggested improvements would be hardest to actually execute,
+and why?
 \`\`\`
 
 \`\`\`
-What blind spots or unstated assumptions does this synthesis have?
+Play devil's advocate against your own top recommendation — what's the
+strongest case for leaving the strategy as it is?
 \`\`\`
 
-This is often where the real value shows up — not in the first answer, but in what surfaces when you ask it to critique its own work.
+### Step 9: Compare multiple proposals side by side
 
-### Step 10: Pull in outside context with web search
-
-This is where web search earns its keep for strategy work — most of what you need won't already be sitting in your own documents. Say explicitly when you want Claude to search, rather than assuming it will:
+If more than one strategic play has been submitted for the same problem, don't review them one at a time — put them next to each other using the same criteria, so the tradeoffs are visible in one place:
 
 \`\`\`
-Search for recent news or analyst commentary on [competitor / market] that's
-relevant to this, and note where it supports or contradicts our internal view.
+Score each of the proposals against Suitability, Feasibility, and
+Acceptability in a single table, with a one-line justification for each
+score. Then tell me which one you'd recommend, and what would have to be
+true for a different one to be the better choice.
+\`\`\`
+
+That last part matters: a good comparison doesn't just declare a winner — it tells you the conditions under which the recommendation would flip. That's exactly the kind of judgment worth bringing back to the room, not taking at face value.
+
+### Step 10: Test the narrative against stakeholder personas
+
+A strategy that only works on paper isn't done — it has to land with the people who'll live with it. Ask Claude to respond *as* specific stakeholders reacting to the narrative, not just critique it in the abstract:
+
+\`\`\`
+Read the strategy narrative as if you were each of the following: an
+employee whose team's work will change because of it, a customer deciding
+whether it matters to them, and an investor deciding whether it justifies
+the investment. For each, tell me what would land, what would raise
+questions, and what's missing for that audience specifically.
+\`\`\`
+
+The default set — employees, customers, investors — covers the audiences most strategy communication has to survive. Swap in others when they matter more:
+
+\`\`\`
+Also test this against [a specific customer segment / the works council / a
+regulator] — what would they push back on that the others wouldn't?
+\`\`\`
+
+This is often where the real value shows up — not in whether the strategy is internally consistent, but in whether it survives contact with the people who have to believe it.
+
+### Step 11: Pull in outside context with web search
+
+Ground the review in what's actually happening outside the building, not just what's in your documents. Say explicitly when you want Claude to search, rather than assuming it will:
+
+\`\`\`
+Search for recent market or competitor moves relevant to this strategy, and
+note where they support or undercut the current thinking.
 \`\`\`
 
 Ask it to cite what it found so you can check the source — the same "verify before you trust it" habit from Step 7, applied to the open web.
 
-### Step 11: Add visuals once the structure is right
+### Step 12: Add visuals once the structure is right
 
 \`\`\`
-Add a simple diagram or timeline that makes the through-line easier to
-follow at a glance.
+Add a simple chart or diagram that makes the strongest 2–3 findings easier
+to take in at a glance.
 \`\`\`
 
-Content first, polish second — asking for visuals before the analysis is settled means re-explaining what they should show every time the summary changes underneath.
+Content first, polish second — asking for visuals before the review is settled means re-explaining what they should show every time the findings change underneath.
 
-### Step 12: Reformat for a different audience
+### Step 13: Reformat for a different audience
 
-The analysis doesn't change — only its shape does:
-
-\`\`\`
-Turn this into a one-page executive summary: headline, 3 key points, and a
-recommended next step.
-\`\`\`
-
-### Step 13: Turn it into a Skill so it repeats itself
-
-This is the payoff for everything above. Once the recipe works — instructions, sources, format, verification habit — package it so you never re-explain it again:
+The review doesn't change — only its shape does. This is the companion to Step 10: there you tested how each audience would react, here you actually produce the version built for one of them.
 
 \`\`\`
-Turn this into a Skill I can run whenever I need a strategy synthesis — same
-instructions, same verification habit, one command to kick it off.
+Turn this into a one-page version for the board: the recommendation, the
+strongest supporting evidence, and the single biggest risk.
+\`\`\`
+
+### Step 14: Turn it into a Skill so it repeats itself
+
+This is the payoff for everything above. Once the recipe works — instructions, review framework, verification habit, persona testing — package it so you never re-explain it again:
+
+\`\`\`
+Turn this into a Skill I can run for future strategy reviews — same
+framework, same verification habit, same persona testing, one command to
+kick it off.
 \`\`\`
 
 Skills work like the ones from the pre-session basics module: type \`/\` in a new chat and yours will be there.
 
-### Step 14: Open and read the Agent SOP
+### Step 15: Open and read the Agent SOP
 
 When Claude builds you a Skill, it writes a procedure behind it — the **Agent SOP** — laying out exactly what the Skill checks, asks, and does each time it runs. Open it and read it, the way you'd read a colleague's checklist before trusting them to run something unsupervised.
 
 \`\`\`
-Open the SOP for this Skill and add a step that checks all uploaded documents
-are dated within the last quarter before starting the synthesis.
+Open the SOP for this Skill and add a step that checks whether more than one
+proposal has been uploaded, and runs the side-by-side comparison from Step 9
+automatically if so.
 \`\`\`
 
 The stronger the SOP, the more consistently the Skill performs — every time, without you in the room.
 
-### Step 15: Make the Skill ask for what it's missing
+### Step 16: Make the Skill ask for what it's missing
 
 A good Skill doesn't guess when something's unclear — it asks:
 
 \`\`\`
-If I run this Skill and haven't said who the audience is, have it ask me
-before starting rather than assuming.
+If I run this Skill and haven't said whether this is reviewing an existing
+strategy or evaluating new proposals, have it ask me before starting rather
+than assuming.
 \`\`\`
 
-You can go further and have it interview you for anything the documents alone can't resolve:
+You can go further and have it interview you for anything the material alone can't resolve:
 
 \`\`\`
-Before finishing, have the Skill ask me which of two conflicting figures is
-authoritative if the sources disagree, and fold my answer into the summary.
+Before finishing, have the Skill ask me which stakeholder persona matters
+most for this particular review, if it's not obvious from the material, and
+weight its narrative testing accordingly.
 \`\`\`
 
-That turns the Skill from a report generator into something closer to a structured interview: it does the mechanical synthesis, then asks you for the judgment calls only a person can make.
+That turns the Skill from a report generator into something closer to a structured interview: it does the mechanical review, then asks you for the judgment calls only a person can make.
 
-### Step 16: Save, update, and share it
+### Step 17: Save, update, and share it
 
 When Claude finishes building a Skill, it will typically offer you a save (and sometimes a download) option — take it. Once saved, it's there under \`/\` next time. To change it later, don't rebuild from scratch:
 
 \`\`\`
-Update my strategy synthesis Skill to also flag when a document is more than
+Update my strategy review Skill to also flag when a document is more than
 one quarter old.
 \`\`\`
 
 If your team is on a Team or Enterprise plan, a working Skill can usually be shared so colleagues use the same one instead of rebuilding it themselves.
 
-### Step 17: Nest skills inside skills
+### Step 18: Nest skills inside skills
 
 A Skill doesn't have to solve every part of the problem itself — it can call another Skill as a step. If someone on the team has already built and refined a Skill that reliably produces DFDS-branded slides, your strategy Skill doesn't need to solve formatting itself:
 
@@ -424,10 +466,12 @@ its SKILL.md before starting so the branding and layout stay consistent.
 > **The moves that carry to any project — not just this one:**
 >
 > - Give Claude the recurring shape of the task, not just an isolated question
+> - Apply a real evaluation framework instead of vague judgment — something like Simons' 7 Questions or SFA, not just "what's missing"
+> - Compare multiple options against the same criteria rather than reviewing each in isolation
+> - Test a narrative against the specific people who have to believe it, not just for internal consistency
 > - Name the audience and the exact format you want back
 > - Verify the first answer before you trust it — ask *how* it got there
 > - Don't stop at the first draft — drill in, push back
-> - Ask for options, a best-practice review, or blind spots — not just instructions
 > - Bring in outside context with web search when your files alone don't explain something
 > - Add polish (visuals, formatting) only once the content is right
 > - Once the recipe works, turn it into a Skill — then open and refine its SOP the same way you refined your original instructions
@@ -435,7 +479,7 @@ its SKILL.md before starting so the branding and layout stay consistent.
 > - Share what works instead of leaving everyone to rebuild it
 > - Let Skills call other Skills — a well-built narrow Skill becomes a building block, not something rebuilt every time
 >
-> **Specific to this one:** multiple source documents that may disagree, citing where every claim came from, web research for market/competitor context, and a Word brief as the default with a slide version available via a shared template Skill.`,
+> **Specific to this one:** financial, market, customer and competitor data alongside submitted proposals, a choice of Simons' 7 Questions or the SFA framework depending on what's being reviewed, stakeholder-persona narrative testing, and a Word review as the default with a slide version available via a shared template Skill.`,
   },
   'effective-meetings': {
     title: 'Effective Meetings — Your Playbook',

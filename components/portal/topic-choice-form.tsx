@@ -13,7 +13,7 @@ const TOPICS: { id: Topic; title: string; description: string }[] = [
   {
     id: 'strategy-review',
     title: 'Strategy review across multiple documents',
-    description: 'Pull several documents (and outside research) into one clear strategic summary.',
+    description: 'Critique or score a strategy using real frameworks, then pressure-test it against stakeholders.',
   },
   {
     id: 'effective-meetings',
