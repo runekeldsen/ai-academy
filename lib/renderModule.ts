@@ -10,7 +10,7 @@ export async function renderModuleContent(content: string): Promise<{ html: stri
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
-    return `<div class="prompt-block"><textarea class="prompt-textarea" readonly>${escaped}</textarea><button class="copy-btn">Copy prompt</button></div>`
+    return `<div class="prompt-block"><textarea class="prompt-textarea" readonly>${escaped}</textarea><button class="copy-btn no-print">Copy prompt</button></div>`
   }
 
   let stepCounter = 0

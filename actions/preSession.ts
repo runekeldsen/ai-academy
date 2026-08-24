@@ -2,9 +2,9 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { TOPICS, type Topic } from '@/lib/topicGuides'
 
-const TOPICS = ['financial-review', 'strategy-review', 'effective-meetings'] as const
-export type Topic = (typeof TOPICS)[number]
+export type { Topic }
 
 export async function chooseTopic(topic: Topic): Promise<{ error?: string }> {
   if (!TOPICS.includes(topic)) return { error: 'Invalid topic' }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { ModuleContent } from '@/components/portal/module-content'
 import { TopicChoiceForm } from '@/components/portal/topic-choice-form'
 import { setModuleCompleted } from '@/actions/progress'
@@ -86,13 +87,29 @@ export function PreSessionStepper({
         <p className="text-gray-500">
           You&apos;ve walked through the basics and picked your project. See you at the live session.
         </p>
-        <button
-          onClick={handleFinish}
-          className="px-5 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"
-          style={{ backgroundColor: '#2563eb' }}
-        >
-          Go to normal AI Training →
-        </button>
+
+        {topic && (
+          <Link
+            href={`/portal/pre-session/guide/${topic}`}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium border transition-colors"
+            style={{ borderColor: '#2563eb', color: '#2563eb' }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
+            Download your guide
+          </Link>
+        )}
+
+        <div>
+          <button
+            onClick={handleFinish}
+            className="px-5 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"
+            style={{ backgroundColor: '#2563eb' }}
+          >
+            Go to normal AI Training →
+          </button>
+        </div>
 
         <div>
           {confirmingRedo ? (
