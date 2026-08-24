@@ -196,6 +196,17 @@ more than 20% over budget for the year, not just the monthly move.
 
 If your team is on a Team or Enterprise plan, a working Skill can usually be shared so colleagues use the same one instead of rebuilding it themselves. Once yours is solid, that's worth doing — it's the fastest way the rest of EMT, and eventually DFDS, benefits from the work you already put in.
 
+### Step 16: Nest skills inside skills
+
+A Skill doesn't have to solve every part of the problem itself — it can call another Skill as a step. Remember the PowerPoint caution from Step 4? This is how it gets resolved properly. If someone on the team has already built and refined a Skill that reliably produces DFDS-branded PowerPoints, your financial review Skill doesn't need to solve formatting itself:
+
+\`\`\`
+When generating the final output, use the "DFDS PowerPoint" Skill to build
+the slide version, instead of trying to format it yourself.
+\`\`\`
+
+Rather than asking Claude to freehand DFDS's branding from scratch every time, someone invests once in a narrow, well-tested Skill for exactly that, and every other Skill can lean on it. It's the same "invest once, reuse forever" idea from Step 12 — just one layer up: Skills built on Skills.
+
 > **The moves that carry to any project — not just this one:**
 >
 > - Give Claude the recurring shape of the task, not just an isolated question
@@ -208,6 +219,7 @@ If your team is on a Team or Enterprise plan, a working Skill can usually be sha
 > - Once the recipe works, turn it into a Skill — then open and refine its SOP the same way you refined your original instructions
 > - Build in questions for whatever the Skill can't know on its own
 > - Share what works instead of leaving everyone to rebuild it
+> - Let Skills call other Skills — a well-built narrow Skill becomes a building block, not something rebuilt every time
 >
 > **Specific to this one:** the budget vs. actuals file, the 10% variance threshold, and Word as the default output format.`,
   },
