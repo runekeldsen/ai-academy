@@ -627,7 +627,16 @@ Open the SOP for this Skill and add a step that flags any action item
 carried over unfinished from the previous meeting.
 \`\`\`
 
-The stronger the SOP, the more consistently the Skill performs — every time, without you in the room.
+A sharper version of the same idea, if the action log is shared and spans many meetings: teams are good at logging new actions and bad at closing old ones, especially once a follow-up happens as a passing comment rather than its own agenda item, and the log itself falls out of anyone's mind. Have the SOP actively check for that instead of relying on someone remembering to:
+
+\`\`\`
+Add a step that checks the shared action log for anything still open, scans
+this meeting's notes or transcript for a follow-up mention of each one, and
+— if that follow-up sounds conclusive — suggests closing the action with the
+conclusion noted, rather than leaving it open indefinitely.
+\`\`\`
+
+That turns "did anyone ever follow up on this?" from something you have to remember to ask into something the Skill checks every time it runs. The stronger the SOP, the more consistently the Skill performs — every time, without you in the room.
 
 ### Step 17: Make the Skill ask for what it's missing
 
