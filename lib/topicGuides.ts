@@ -187,7 +187,7 @@ That turns the Skill from a report generator into something closer to a structur
 
 ### Step 15: Save, update, and share it
 
-A Skill you create is saved to your account automatically — no separate save step, it's just there under \`/\` next time. To change it later, don't rebuild from scratch:
+When Claude finishes building a Skill, it will typically offer you a save (and sometimes a download) option — take it. Click **Save** rather than assuming it's kept automatically; confirm during the live session exactly what that screen looks like for your account. Once saved, it's there under \`/\` next time. To change it later, don't rebuild from scratch:
 
 \`\`\`
 Update my monthly financial review Skill to also flag any line item that's
