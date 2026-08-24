@@ -88,7 +88,44 @@ Drill into the line item that moved the most — what's driving that change?
 Is this a one-off or part of a trend over the last few months?
 \`\`\`
 
-### Step 8: Add visuals once the structure is right
+### Step 8: Use Claude as a sounding board, not just a doer
+
+So far every prompt has told Claude what to *do*. That's only half of what it's good for — it's also useful as something to think *with*. Instead of issuing instructions, ask it to weigh in:
+
+\`\`\`
+Give me 2–3 different ways to present this trend to the board. Which would
+you recommend, and why?
+\`\`\`
+
+\`\`\`
+Review this analysis against financial reporting best practice. What's
+missing, or what would make it stronger?
+\`\`\`
+
+\`\`\`
+What blind spots or unstated assumptions does this analysis have? What would
+a skeptical CFO push back on?
+\`\`\`
+
+This is often where the real value shows up — not in the first answer, but in what surfaces when you ask it to critique its own work.
+
+### Step 9: Pull in outside context with web search
+
+Web search is enabled on your account — use it when the spreadsheet alone can't explain something. Say explicitly when you want Claude to search, rather than assuming it will:
+
+\`\`\`
+Search for recent news that could explain this month's [fuel prices / freight
+rates / relevant market] movement, and note anything relevant in the summary.
+\`\`\`
+
+\`\`\`
+How does this month's [metric] compare to typical benchmarks for shipping
+and logistics companies? Search if you need current figures.
+\`\`\`
+
+Ask it to cite what it found so you can sanity-check the source — treat search results with the same "verify before you trust it" habit from Step 6.
+
+### Step 10: Add visuals once the structure is right
 
 \`\`\`
 Add a simple bar chart showing the line items that moved most, and a trend
@@ -97,7 +134,7 @@ line for the top 2 metrics over the last 3 months.
 
 Notice the order: content and structure first, polish second. Asking for visuals before the analysis is settled means re-explaining chart requirements every time the numbers underneath change.
 
-### Step 9: Reformat the same result for a different audience
+### Step 11: Reformat the same result for a different audience
 
 The analysis doesn't change — only its shape does:
 
@@ -105,7 +142,7 @@ The analysis doesn't change — only its shape does:
 Turn this into 5 bullet points I can paste directly into my update to the board.
 \`\`\`
 
-### Step 10: Turn it into a Skill so it repeats itself
+### Step 12: Turn it into a Skill so it repeats itself
 
 This is the payoff for everything above. Once the recipe works — instructions, file, format, verification habit, visuals — package it so you never re-explain it again:
 
@@ -122,6 +159,8 @@ Skills work like the ones from the pre-session basics module: type \`/\` in a ne
 > - Name the audience and the exact format you want back
 > - Verify the first answer before you trust it — ask *how* it got there
 > - Don't stop at the first draft — drill in, push back
+> - Ask for options, a best-practice review, or blind spots — not just instructions
+> - Bring in outside context with web search when your files alone don't explain something
 > - Add polish (visuals, formatting) only once the content is right
 > - Once the recipe works, turn it into a Skill instead of re-teaching it each time
 >
