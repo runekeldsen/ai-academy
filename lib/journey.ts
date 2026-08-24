@@ -38,6 +38,7 @@ type RawSection = {
   id: string
   title: string
   sort_order: number | null
+  is_pre_session: boolean | null
   academy_modules: {
     id: string
     title: string
@@ -76,7 +77,7 @@ export async function getJourney(
         : Promise.resolve({ data: [] as { section_id: string }[] }),
       supabase
         .from('academy_sections')
-        .select('id, title, sort_order, academy_modules(id, title, description, difficulty, duration_minutes, sort_order, prerequisite_module_id, published, created_at)')
+        .select('id, title, sort_order, is_pre_session, academy_modules(id, title, description, difficulty, duration_minutes, sort_order, prerequisite_module_id, published, created_at)')
         .eq('trainer_id', trainerId ?? '')
         .order('sort_order', { ascending: true }),
       supabase
@@ -102,6 +103,7 @@ export async function getJourney(
   }
 
   const journeySections: JourneySection[] = (((sections as unknown as RawSection[]) ?? [])
+    .filter(s => !s.is_pre_session)
     .filter(s => teamSectionIds.length === 0 || teamSectionIds.includes(s.id))
     .map(s => ({
       id: s.id,

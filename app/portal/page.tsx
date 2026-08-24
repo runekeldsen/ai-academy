@@ -1,5 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdmin } from '@supabase/supabase-js'
+import { redirect } from 'next/navigation'
+import { sendEmail, renderEmail } from '@/lib/email'
 import Link from 'next/link'
 import { MarkRead } from '@/components/portal/mark-read'
 import { WelcomeDialog } from '@/components/portal/welcome-dialog'
@@ -9,6 +11,7 @@ import { getJourney, getContinueModule, isPrereqUnmet, isNewModule } from '@/lib
 import { getMotivation } from '@/lib/achievements'
 import { GrowthCard } from '@/components/portal/achievement-badges'
 import { PromotionBanner } from '@/components/portal/promotion-banner'
+import { PreSessionBanner } from '@/components/portal/pre-session-banner'
 
 const difficultyStyle: Record<string, string> = {
   Beginner:     'bg-green-50 text-green-700 border-green-200',
@@ -22,12 +25,52 @@ export default async function LearnerPortal() {
 
   const { data: profile } = await supabase
     .from('academy_profiles')
-    .select('first_name, trainer_id, team_id, welcomed_at, academy_teams(name, welcome_message)')
+    .select('first_name, last_name, trainer_id, team_id, welcomed_at, first_login_at, pre_session_dismissed, academy_teams(name, welcome_message, academy_name, pre_session_section_id)')
     .eq('id', user!.id)
     .single()
 
   const teamRaw = profile?.academy_teams
-  const team = (Array.isArray(teamRaw) ? teamRaw[0] : teamRaw) as { name: string; welcome_message: string } | null ?? null
+  const team = (Array.isArray(teamRaw) ? teamRaw[0] : teamRaw) as
+    { name: string; welcome_message: string; academy_name: string | null; pre_session_section_id: string | null } | null ?? null
+
+  if (team?.pre_session_section_id && !profile?.pre_session_dismissed) {
+    redirect('/portal/pre-session')
+  }
+
+  // First-login detection — runs once, fire-and-forget
+  if (profile && !profile.first_login_at && profile.trainer_id) {
+    const admin = createAdmin(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    )
+    // Mark first login — .is filter ensures only one concurrent request wins
+    const { data: updated } = await admin.from('academy_profiles')
+      .update({ first_login_at: new Date().toISOString() })
+      .eq('id', user!.id)
+      .is('first_login_at', null)
+      .select('id')
+
+    // Only send email if this request was the one that actually wrote the row
+    if (updated && updated.length > 0) {
+      const { data: { user: trainerUser } } = await admin.auth.admin.getUserById(profile.trainer_id)
+      if (trainerUser?.email) {
+        const learnerName = [profile.first_name, profile.last_name].filter(Boolean).join(' ') || user!.email!
+        const academyName = team?.academy_name ?? team?.name ?? "Rune's AI Academy"
+        await sendEmail({
+          to: trainerUser.email,
+          subject: `${learnerName} just logged in for the first time`,
+          html: renderEmail({
+            heading: 'First login 🎉',
+            bodyHtml: `<p><strong>${learnerName}</strong> has just logged in to <strong>${academyName}</strong> for the first time.</p><p style="color:#64748b;font-size:14px;">They're now on the portal and can start working through their modules.</p>`,
+            cta: {
+              label: 'View learner →',
+              href: `https://ai.keldsen.org/trainer/learners/${user!.id}`,
+            },
+          }),
+        })
+      }
+    }
+  }
 
   const journey = await getJourney(supabase, user!.id, {
     trainerId: profile?.trainer_id ?? null,
@@ -147,6 +190,10 @@ export default async function LearnerPortal() {
             </div>
           </div>
         </div>
+      )}
+
+      {team?.pre_session_section_id && (
+        <PreSessionBanner href="/portal/pre-session" />
       )}
 
       <PromotionBanner promotions={promotions} />

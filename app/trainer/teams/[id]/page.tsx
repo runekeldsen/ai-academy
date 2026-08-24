@@ -5,6 +5,7 @@ import { DeleteTeamButton } from '@/components/trainer/delete-team-button'
 import { TeamSectionPicker } from '@/components/trainer/team-section-picker'
 import { TeamLearnerManager } from '@/components/trainer/team-learner-manager'
 import { TeamBroadcastForm } from '@/components/trainer/team-broadcast-form'
+import { TopicChoicesPanel } from '@/components/trainer/topic-choices-panel'
 
 export default async function TeamDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -13,7 +14,7 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
 
   const { data: team } = await supabase
     .from('academy_teams')
-    .select('id, name, welcome_message, academy_name')
+    .select('id, name, welcome_message, academy_name, slug, pre_session_section_id')
     .eq('id', id)
     .eq('trainer_id', user!.id)
     .single()
@@ -25,6 +26,15 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
     .from('academy_sections')
     .select('id, title')
     .eq('trainer_id', user!.id)
+    .eq('is_pre_session', false)
+    .order('sort_order', { ascending: true })
+
+  // Pre-session-only sections, offered as this team's guided-prep path
+  const { data: preSessionSections } = await supabase
+    .from('academy_sections')
+    .select('id, title')
+    .eq('trainer_id', user!.id)
+    .eq('is_pre_session', true)
     .order('sort_order', { ascending: true })
 
   // Which sections are currently assigned to this team
@@ -46,6 +56,23 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
   const teamLearners = (allLearners ?? []).filter(l => l.team_id === id)
   const unassignedLearners = (allLearners ?? []).filter(l => !l.team_id)
 
+  // Live-session topic choices for this team's learners
+  const teamLearnerIds = teamLearners.map(l => l.id)
+  const { data: topicChoiceRows } = teamLearnerIds.length
+    ? await supabase
+        .from('academy_topic_choices')
+        .select('learner_id, topic, chosen_at')
+        .in('learner_id', teamLearnerIds)
+    : { data: [] as { learner_id: string; topic: string; chosen_at: string }[] }
+
+  const learnerNameById = new Map(teamLearners.map(l => [l.id, [l.first_name, l.last_name].filter(Boolean).join(' ') || l.email || 'Learner']))
+  const topicChoices = (topicChoiceRows ?? []).map(row => ({
+    learnerId: row.learner_id,
+    name: learnerNameById.get(row.learner_id) ?? 'Learner',
+    topic: row.topic,
+    chosenAt: row.chosen_at,
+  }))
+
   return (
     <div className="space-y-8 max-w-2xl">
       <div className="flex items-center justify-between">
@@ -61,7 +88,15 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
       {/* Team details */}
       <section className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
         <h2 className="font-heading text-base font-semibold text-gray-800">Team details</h2>
-        <TeamEditForm teamId={id} name={team.name} welcomeMessage={team.welcome_message} academyName={team.academy_name ?? ''} />
+        <TeamEditForm
+          teamId={id}
+          name={team.name}
+          welcomeMessage={team.welcome_message}
+          academyName={team.academy_name ?? ''}
+          slug={team.slug ?? ''}
+          preSessionSections={(preSessionSections ?? []).map(s => ({ id: s.id, title: s.title }))}
+          preSessionSectionId={team.pre_session_section_id}
+        />
       </section>
 
       {/* Sections */}
@@ -78,6 +113,19 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
           assignedIds={[...assignedSectionIds]}
         />
       </section>
+
+      {/* Live-session topic choices */}
+      {team.pre_session_section_id && (
+        <section className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+          <div>
+            <h2 className="font-heading text-base font-semibold text-gray-800">Live session topic choices</h2>
+            <p className="mt-1 text-sm text-gray-500">
+              What each learner picked to work on in the live session, from the pre-session path.
+            </p>
+          </div>
+          <TopicChoicesPanel choices={topicChoices} />
+        </section>
+      )}
 
       {/* Learners */}
       <section className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">

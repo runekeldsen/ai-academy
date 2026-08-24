@@ -32,6 +32,8 @@ export async function updateTeam(id: string, data: {
   name: string
   welcomeMessage: string
   academyName?: string
+  slug?: string
+  preSessionSectionId?: string | null
 }): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -43,6 +45,8 @@ export async function updateTeam(id: string, data: {
       name: data.name.trim(),
       welcome_message: data.welcomeMessage.trim(),
       academy_name: data.academyName?.trim() || null,
+      slug: data.slug?.trim().toLowerCase() || null,
+      pre_session_section_id: data.preSessionSectionId || null,
     })
     .eq('id', id)
     .eq('trainer_id', user.id)

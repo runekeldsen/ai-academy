@@ -3,15 +3,28 @@
 import { useState } from 'react'
 import { updateTeam } from '@/actions/teams'
 
-export function TeamEditForm({ teamId, name: initialName, welcomeMessage: initialWelcome, academyName: initialAcademyName }: {
+export function TeamEditForm({
+  teamId,
+  name: initialName,
+  welcomeMessage: initialWelcome,
+  academyName: initialAcademyName,
+  slug: initialSlug,
+  preSessionSections = [],
+  preSessionSectionId: initialPreSessionSectionId = null,
+}: {
   teamId: string
   name: string
   welcomeMessage: string
   academyName: string
+  slug: string
+  preSessionSections?: { id: string; title: string }[]
+  preSessionSectionId?: string | null
 }) {
   const [name, setName] = useState(initialName)
   const [welcome, setWelcome] = useState(initialWelcome)
   const [academyName, setAcademyName] = useState(initialAcademyName)
+  const [slug, setSlug] = useState(initialSlug)
+  const [preSessionSectionId, setPreSessionSectionId] = useState(initialPreSessionSectionId ?? '')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
@@ -20,7 +33,7 @@ export function TeamEditForm({ teamId, name: initialName, welcomeMessage: initia
     e.preventDefault()
     if (!name.trim()) return
     setSaving(true); setError(''); setSaved(false)
-    const res = await updateTeam(teamId, { name, welcomeMessage: welcome, academyName })
+    const res = await updateTeam(teamId, { name, welcomeMessage: welcome, academyName, slug, preSessionSectionId: preSessionSectionId || null })
     setSaving(false)
     if (res.error) { setError(res.error); return }
     setSaved(true)
@@ -38,6 +51,23 @@ export function TeamEditForm({ teamId, name: initialName, welcomeMessage: initia
           required
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+      </div>
+
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-gray-700">
+          Login link slug <span className="text-gray-400 font-normal">(team-specific URL)</span>
+        </label>
+        <div className="flex items-center gap-1.5">
+          <span className="text-sm text-gray-400 whitespace-nowrap">ai.keldsen.org/</span>
+          <input
+            type="text"
+            value={slug}
+            onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+            placeholder="emt"
+            className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <p className="text-xs text-gray-400">Share this link with your team so they land on the branded login screen.</p>
       </div>
 
       <div className="space-y-1">
@@ -65,6 +95,25 @@ export function TeamEditForm({ teamId, name: initialName, welcomeMessage: initia
           rows={4}
           className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
         />
+      </div>
+
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-gray-700">
+          Pre-session path <span className="text-gray-400 font-normal">(a simple guided flow learners land on before the normal portal)</span>
+        </label>
+        <select
+          value={preSessionSectionId}
+          onChange={e => setPreSessionSectionId(e.target.value)}
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">None — use the normal portal</option>
+          {preSessionSections.map(s => (
+            <option key={s.id} value={s.id}>{s.title}</option>
+          ))}
+        </select>
+        <p className="text-xs text-gray-400">
+          When set, learners in this team land on that path by default and can switch back to the normal portal, where a banner lets them return to it.
+        </p>
       </div>
 
       {error && <p className="text-sm text-red-600">{error}</p>}
