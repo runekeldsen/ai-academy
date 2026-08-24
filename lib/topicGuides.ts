@@ -270,7 +270,8 @@ Upload everything relevant to the Project at once — internal reports, competit
 Strategy work usually needs two different things: a written brief to read beforehand, and a slide version for the room. Decide which before you run anything.
 
 \`\`\`
-Give me this as a one-page Word brief I can read before the meeting.
+Give me the result as a one-page Word brief I can read before the meeting,
+not just chat text.
 \`\`\`
 
 If you also need slides and DFDS branding matters, lean on a dedicated PowerPoint skill for that rather than asking this Project to freehand the template — Claude can build the deck, but it won't know DFDS's exact layout and branding unless that's fed in separately. See Step 17.
