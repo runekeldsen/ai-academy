@@ -17,17 +17,21 @@ export const TOPIC_GUIDES: Record<Topic, Guide> = {
 
 In the sidebar, click **Projects → New project**. Call it something you'll recognize next month — "Monthly Financial Review" works fine. This is the one-time container everything else in this guide lives inside: your instructions, this month's file, and every conversation about the review.
 
-### Step 2: Start rough — see the ceiling
+### Step 2: Upload this month's numbers
 
-Try the laziest possible version first, so you have something to compare against later:
+Upload the current budget vs. actuals file to the Project. If last month's file is still in there, replace it — Claude should only see the latest baseline, not a stack of old ones.
+
+### Step 3: Start rough — see the ceiling
+
+Try the laziest possible version first, against the file you just uploaded, so you have something to compare against later:
 
 \`\`\`
 Help me with our financial review.
 \`\`\`
 
-It'll produce *something* — but generic. Claude has no idea who it's writing for, what "review" means to you, what counts as worth flagging, or what shape the answer should take. It's guessing on every dimension at once. That's the ceiling of a lazy prompt, and it's low.
+It'll produce *something* — but generic, even with real numbers to work from. Claude has no idea who it's writing for, what "review" means to you, what counts as worth flagging, or what shape the answer should take. It's guessing on every dimension at once. That's the ceiling of a lazy prompt, and it's low.
 
-### Step 3: Turn it into instructions you'll reuse every month
+### Step 4: Turn it into instructions you'll reuse every month
 
 Now give it what it was missing — the recurring shape of the task, a concrete threshold, the audience, and the format of the answer:
 
@@ -41,10 +45,6 @@ Always end with one recommended action or question to raise.
 
 Set this as your **Project instructions**, not a one-off message. This is the highest-leverage step in the whole playbook — you write it once, and it pays out every single month without you re-explaining anything.
 
-### Step 4: Upload this month's numbers
-
-Upload the current budget vs. actuals file to the Project. If last month's file is still in there, replace it — Claude should only see the latest baseline, not a stack of old ones.
-
 ### Step 5: Decide the deliverable — Word, not PowerPoint
 
 Add one more piece of context before you run anything: what format do you actually need back?
@@ -55,7 +55,7 @@ Add one more piece of context before you run anything: what format do you actual
 Give me the review as a Word document, not just chat text.
 \`\`\`
 
-Fold this into your Step 3 instructions once you know you'll always want it.
+Fold this into your Step 4 instructions once you know you'll always want it.
 
 ### Step 6: Run it
 
@@ -64,7 +64,7 @@ Please run this month's review against the file I've uploaded, and give me
 the result as a Word document.
 \`\`\`
 
-Compare this to Step 2. Same underlying question — "review this for me" — but a completely different quality of answer, because of what you invested upstream.
+Compare this to Step 3. Same underlying question — "review this for me" — but a completely different quality of answer, because of what you invested upstream.
 
 ### Step 7: Verify before you trust it
 
@@ -168,7 +168,7 @@ Open the SOP for this Skill and add a step that checks the file was uploaded
 this month before starting the review.
 \`\`\`
 
-This is the same lever from Step 3, one level up: you're no longer just writing instructions for a conversation, you're writing instructions for a repeatable procedure. The stronger the SOP, the more consistently the Skill performs — every time, without you in the room.
+This is the same lever from Step 4, one level up: you're no longer just writing instructions for a conversation, you're writing instructions for a repeatable procedure. The stronger the SOP, the more consistently the Skill performs — every time, without you in the room.
 
 ### Step 15: Make the Skill ask for what it's missing
 
@@ -236,17 +236,21 @@ Rather than asking Claude to freehand DFDS's branding from scratch every time, s
 
 In the sidebar, click **Projects → New project**. Call it something like "Strategy Reviews" — a name that'll make sense the next time you need to pull one together. This is the one-time container everything else in this guide lives inside: your instructions, your source documents, and every synthesis you run.
 
-### Step 2: Start rough — see the ceiling
+### Step 2: Gather your source material
 
-Try the laziest possible version first, so you have something to compare against later:
+Upload everything relevant to the Project at once — internal reports, competitor analysis, board decks, market notes. If you want Claude to pull in outside research too, say so explicitly; it won't assume.
+
+### Step 3: Start rough — see the ceiling
+
+Try the laziest possible version first, against the documents you just uploaded, so you have something to compare against later:
 
 \`\`\`
-Help me pull together a strategy summary.
+Help me pull together a strategy summary from these documents.
 \`\`\`
 
-It'll produce *something* — but generic. Claude has no idea who it's for, what to prioritise when sources disagree, how deep to go, or what shape the answer should take. It's guessing on every dimension at once. That's the ceiling of a lazy prompt, and it's low.
+It'll produce *something* — but generic, even with real material to work from. Claude has no idea who it's for, what to prioritise when sources disagree, how deep to go, or what shape the answer should take. It's guessing on every dimension at once. That's the ceiling of a lazy prompt, and it's low.
 
-### Step 3: Turn it into instructions you'll reuse every time
+### Step 4: Turn it into instructions you'll reuse every time
 
 Now give it what it was missing — the recurring shape of the task, how to handle disagreement, the audience, and the standard it should hold itself to:
 
@@ -260,10 +264,6 @@ claim came from.
 \`\`\`
 
 Set this as your **Project instructions**, not a one-off message. This is the highest-leverage step in the whole playbook — you write it once, and it pays out every time you run a synthesis.
-
-### Step 4: Gather your source material
-
-Upload everything relevant to the Project at once — internal reports, competitor analysis, board decks, market notes. If you want Claude to pull in outside research too, say so explicitly; it won't assume.
 
 ### Step 5: Decide the deliverable
 
@@ -284,7 +284,7 @@ our next strategy discussion? Give me the result as a Word document, and
 note where the documents agree, where they disagree, and anything missing.
 \`\`\`
 
-Compare this to Step 2. Same underlying question, completely different quality of answer — because of what you invested upstream.
+Compare this to Step 3. Same underlying question, completely different quality of answer — because of what you invested upstream.
 
 ### Step 7: Verify before you trust it
 
