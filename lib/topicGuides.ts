@@ -11,11 +11,21 @@ export const TOPIC_GUIDES: Record<Topic, Guide> = {
   'financial-review': {
     title: 'Monthly Financial Review — Your Playbook',
     subtitle: 'The routine you\'ll run every month after the live session.',
-    content: `This is the step-by-step you'll follow after the live session, every month. You built the Project shell in the pre-session module — here's how to put it to work, understand what it gives you, and eventually make it repeat itself.
+    content: `This is the step-by-step you'll follow after the live session, every month. You built the Project shell in the pre-session module. But the real point of this guide isn't the exact prompts below — it's watching the output get better as you put more thought into what you ask for. That's the skill worth taking away: the more you invest in instructions, context and format, the more repeatable and higher-quality the result. Everything below is deliberately ordered to make that visible.
 
-### Step 1: Set your Project instructions once
+### Step 1: Start rough — see the ceiling
 
-Your instructions do the heavy lifting so you don't repeat yourself each month. Aim for something like this — adjust the specifics to your area:
+Try the laziest possible version first, so you have something to compare against later:
+
+\`\`\`
+Help me with our financial review.
+\`\`\`
+
+It'll produce *something* — but generic. Claude has no idea who it's writing for, what "review" means to you, what counts as worth flagging, or what shape the answer should take. It's guessing on every dimension at once. That's the ceiling of a lazy prompt, and it's low.
+
+### Step 2: Turn it into instructions you'll reuse every month
+
+Now give it what it was missing — the recurring shape of the task, a concrete threshold, the audience, and the format of the answer:
 
 \`\`\`
 You're helping with our monthly financial review. Each month I'll upload the
@@ -25,34 +35,36 @@ plain-language bullet points a non-finance colleague could understand.
 Always end with one recommended action or question to raise.
 \`\`\`
 
-### Step 2: Upload this month's numbers
+Set this as your **Project instructions**, not a one-off message. This is the highest-leverage step in the whole playbook — you write it once, and it pays out every single month without you re-explaining anything.
 
-Upload the current budget vs. actuals file to the Project. If you have last month's file already in there from before, replace it — Claude should only see the latest baseline, not a stack of old ones.
+### Step 3: Upload this month's numbers
 
-### Step 3: Choose your output format
+Upload the current budget vs. actuals file to the Project. If last month's file is still in there, replace it — Claude should only see the latest baseline, not a stack of old ones.
 
-Decide what you want out the other end before you run anything. A chat reply is fine for a quick sanity check, but for anything you'll actually share, ask for a proper document.
+### Step 4: Decide the deliverable — Word, not PowerPoint
+
+Add one more piece of context before you run anything: what format do you actually need back?
 
 **Word, not PowerPoint, is usually the right call.** Claude produces a clean, well-structured Word document reliably. Matching DFDS's exact PowerPoint template and branding is a different problem — Claude will guess at layout, fonts and slide structure, and you'll spend more time fixing formatting than the review saved you. Save PowerPoint for when you're presenting live and genuinely need DFDS's slide branding; use Word for the review itself.
-
-Add this to your prompt — or fold it into your Project instructions in Step 1 if you always want it:
 
 \`\`\`
 Give me the review as a Word document, not just chat text.
 \`\`\`
 
-### Step 4: Run the review
+Fold this into your Step 2 instructions once you know you'll always want it.
 
-In a new chat inside the Project:
+### Step 5: Run it
 
 \`\`\`
 Please run this month's review against the file I've uploaded, and give me
 the result as a Word document.
 \`\`\`
 
-### Step 5: Check it before you trust it
+Compare this to Step 1. Same underlying question — "review this for me" — but a completely different quality of answer, because of what you invested upstream.
 
-Treat the first result the way you'd treat a first draft from a junior analyst — useful, but worth checking before it goes anywhere. This is the part that actually matters: understanding *why* it says what it says, not just reading the bullets.
+### Step 6: Verify before you trust it
+
+Treat the result like a first draft from a junior analyst — useful, but worth checking before it goes anywhere. This is the part that actually matters: understanding *why* it says what it says, not just reading the bullets.
 
 \`\`\`
 Show me exactly which rows in the spreadsheet support this bullet point.
@@ -64,7 +76,9 @@ Walk me through how you calculated that percentage change.
 
 If an answer doesn't hold up, say so — Claude will recalculate rather than defend a wrong number, but only if you check.
 
-### Step 6: Push back and drill down
+### Step 7: Push back and drill down
+
+Don't accept the first answer as the final one:
 
 \`\`\`
 Drill into the line item that moved the most — what's driving that change?
@@ -74,28 +88,26 @@ Drill into the line item that moved the most — what's driving that change?
 Is this a one-off or part of a trend over the last few months?
 \`\`\`
 
-### Step 7: Add visuals once the structure is right
-
-Get the content right first, then make it easier to scan. Once you're happy with the analysis:
+### Step 8: Add visuals once the structure is right
 
 \`\`\`
 Add a simple bar chart showing the line items that moved most, and a trend
 line for the top 2 metrics over the last 3 months.
 \`\`\`
 
-Asking for visuals after the content is settled — not before — means you're not re-explaining chart requirements every time you tweak the numbers underneath.
+Notice the order: content and structure first, polish second. Asking for visuals before the analysis is settled means re-explaining chart requirements every time the numbers underneath change.
 
-### Step 8: Package it for your update
+### Step 9: Reformat the same result for a different audience
 
-For a quick message rather than the full document:
+The analysis doesn't change — only its shape does:
 
 \`\`\`
 Turn this into 5 bullet points I can paste directly into my update to the board.
 \`\`\`
 
-### Step 9: Turn it into a Skill so it repeats itself
+### Step 10: Turn it into a Skill so it repeats itself
 
-Once the recipe feels right — instructions, file, format, visuals — you don't need to re-explain it every month. Ask Claude to package it as a Skill:
+This is the payoff for everything above. Once the recipe works — instructions, file, format, verification habit, visuals — package it so you never re-explain it again:
 
 \`\`\`
 Turn this into a Skill I can run every month — same instructions, same
@@ -104,9 +116,16 @@ output format, one command to kick it off.
 
 Skills work like the ones from the pre-session basics module: type \`/\` in a new chat and yours will be there, ready to run against this month's file.
 
-### Step 10: Make it a habit
-
-Next month: swap in the new file, and either revisit this Project or run your new Skill. If the answers feel off, it's usually the instructions that need a tweak — not the file.`,
+> **The moves that carry to any project — not just this one:**
+>
+> - Give Claude the recurring shape of the task, not just an isolated question
+> - Name the audience and the exact format you want back
+> - Verify the first answer before you trust it — ask *how* it got there
+> - Don't stop at the first draft — drill in, push back
+> - Add polish (visuals, formatting) only once the content is right
+> - Once the recipe works, turn it into a Skill instead of re-teaching it each time
+>
+> **Specific to this one:** the budget vs. actuals file, the 10% variance threshold, and Word as the default output format.`,
   },
   'strategy-review': {
     title: 'Strategy Review Across Documents — Your Playbook',
