@@ -4,8 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { TOPICS, type Topic } from '@/lib/topicGuides'
 
-export type { Topic }
-
 export async function chooseTopic(topic: Topic): Promise<{ error?: string }> {
   if (!TOPICS.includes(topic)) return { error: 'Invalid topic' }
 

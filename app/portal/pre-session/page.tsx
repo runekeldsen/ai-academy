@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { renderModuleContent } from '@/lib/renderModule'
 import { PreSessionStepper } from '@/components/portal/pre-session-stepper'
-import type { Topic } from '@/actions/preSession'
+import type { Topic } from '@/lib/topicGuides'
 
 export default async function PreSessionPage() {
   const supabase = await createClient()

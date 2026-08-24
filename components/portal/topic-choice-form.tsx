@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { chooseTopic, type Topic } from '@/actions/preSession'
+import { chooseTopic } from '@/actions/preSession'
+import type { Topic } from '@/lib/topicGuides'
 
 const TOPICS: { id: Topic; title: string; description: string }[] = [
   {

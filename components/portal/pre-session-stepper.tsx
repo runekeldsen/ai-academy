@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { ModuleContent } from '@/components/portal/module-content'
 import { TopicChoiceForm } from '@/components/portal/topic-choice-form'
 import { setModuleCompleted } from '@/actions/progress'
-import { dismissPreSession, redoPreSession, type Topic } from '@/actions/preSession'
+import { dismissPreSession, redoPreSession } from '@/actions/preSession'
+import type { Topic } from '@/lib/topicGuides'
 
 type Mod = {
   id: string
