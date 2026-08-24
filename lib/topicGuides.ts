@@ -153,6 +153,49 @@ output format, one command to kick it off.
 
 Skills work like the ones from the pre-session basics module: type \`/\` in a new chat and yours will be there, ready to run against this month's file.
 
+### Step 13: Open and read the Agent SOP
+
+When Claude builds you a Skill, it writes a procedure behind it — the **Agent SOP** — laying out exactly what the Skill checks, asks, and does each time it runs. Open it and read it, the way you'd read a colleague's checklist before trusting them to run something unsupervised.
+
+If a step is wrong, missing, or too rigid, don't just complain about the output — edit the SOP directly, or ask Claude to revise it:
+
+\`\`\`
+Open the SOP for this Skill and add a step that checks the file was uploaded
+this month before starting the review.
+\`\`\`
+
+This is the same lever from Step 2, one level up: you're no longer just writing instructions for a conversation, you're writing instructions for a repeatable procedure. The stronger the SOP, the more consistently the Skill performs — every time, without you in the room.
+
+### Step 14: Make the Skill ask for what it's missing
+
+A good Skill doesn't fail silently or guess when something's wrong — it asks. Build that in explicitly:
+
+\`\`\`
+If I run this Skill and this month's file isn't in the Project yet, have it
+stop and ask me to upload it before continuing.
+\`\`\`
+
+You can go further and have it interview you for anything the numbers alone can't explain — the judgment calls only a person can make:
+
+\`\`\`
+Before finishing the report, have the Skill ask me 2–3 questions about
+anything it can't explain from the numbers alone — for example, if a cost
+category jumped, ask what drove it — and fold my answers into the summary.
+\`\`\`
+
+That turns the Skill from a report generator into something closer to a structured interview: it does the mechanical analysis, then asks you for the parts only you can answer, and combines both into the final output.
+
+### Step 15: Save, update, and share it
+
+A Skill you create is saved to your account automatically — no separate save step, it's just there under \`/\` next time. To change it later, don't rebuild from scratch:
+
+\`\`\`
+Update my monthly financial review Skill to also flag any line item that's
+more than 20% over budget for the year, not just the monthly move.
+\`\`\`
+
+If your team is on a Team or Enterprise plan, a working Skill can usually be shared so colleagues use the same one instead of rebuilding it themselves. Once yours is solid, that's worth doing — it's the fastest way the rest of EMT, and eventually DFDS, benefits from the work you already put in.
+
 > **The moves that carry to any project — not just this one:**
 >
 > - Give Claude the recurring shape of the task, not just an isolated question
@@ -162,7 +205,9 @@ Skills work like the ones from the pre-session basics module: type \`/\` in a ne
 > - Ask for options, a best-practice review, or blind spots — not just instructions
 > - Bring in outside context with web search when your files alone don't explain something
 > - Add polish (visuals, formatting) only once the content is right
-> - Once the recipe works, turn it into a Skill instead of re-teaching it each time
+> - Once the recipe works, turn it into a Skill — then open and refine its SOP the same way you refined your original instructions
+> - Build in questions for whatever the Skill can't know on its own
+> - Share what works instead of leaving everyone to rebuild it
 >
 > **Specific to this one:** the budget vs. actuals file, the 10% variance threshold, and Word as the default output format.`,
   },
