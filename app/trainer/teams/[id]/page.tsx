@@ -5,7 +5,7 @@ import { DeleteTeamButton } from '@/components/trainer/delete-team-button'
 import { TeamSectionPicker } from '@/components/trainer/team-section-picker'
 import { TeamLearnerManager } from '@/components/trainer/team-learner-manager'
 import { TeamBroadcastForm } from '@/components/trainer/team-broadcast-form'
-import { TopicChoicesPanel } from '@/components/trainer/topic-choices-panel'
+import { PreSessionReadinessPanel } from '@/components/trainer/pre-session-readiness-panel'
 
 export default async function TeamDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -66,12 +66,52 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
     : { data: [] as { learner_id: string; topic: string; chosen_at: string }[] }
 
   const learnerNameById = new Map(teamLearners.map(l => [l.id, [l.first_name, l.last_name].filter(Boolean).join(' ') || l.email || 'Learner']))
-  const topicChoices = (topicChoiceRows ?? []).map(row => ({
-    learnerId: row.learner_id,
-    name: learnerNameById.get(row.learner_id) ?? 'Learner',
-    topic: row.topic,
-    chosenAt: row.chosen_at,
-  }))
+
+  // Pre-session readiness: has each learner finished every module in the team's guided-prep path?
+  const { data: preSessionModules } = team.pre_session_section_id
+    ? await supabase
+        .from('academy_modules')
+        .select('id')
+        .eq('section_id', team.pre_session_section_id)
+        .eq('published', true)
+    : { data: [] as { id: string }[] }
+
+  const preSessionModuleIds = (preSessionModules ?? []).map(m => m.id)
+  const totalPreSessionModules = preSessionModuleIds.length
+
+  const { data: preSessionProgressRows } = preSessionModuleIds.length && teamLearnerIds.length
+    ? await supabase
+        .from('academy_progress')
+        .select('learner_id, completed_at')
+        .in('learner_id', teamLearnerIds)
+        .in('module_id', preSessionModuleIds)
+        .not('completed_at', 'is', null)
+    : { data: [] as { learner_id: string; completed_at: string | null }[] }
+
+  const completedCountByLearner = new Map<string, number>()
+  for (const row of preSessionProgressRows ?? []) {
+    completedCountByLearner.set(row.learner_id, (completedCountByLearner.get(row.learner_id) ?? 0) + 1)
+  }
+  const topicByLearner = new Map((topicChoiceRows ?? []).map(row => [row.learner_id, row.topic]))
+
+  const readiness = teamLearners
+    .map(l => {
+      const completed = Math.min(completedCountByLearner.get(l.id) ?? 0, totalPreSessionModules)
+      const topic = topicByLearner.get(l.id) ?? null
+      return {
+        learnerId: l.id,
+        name: learnerNameById.get(l.id) ?? 'Learner',
+        completed,
+        total: totalPreSessionModules,
+        topic,
+        ready: totalPreSessionModules > 0 && completed === totalPreSessionModules && !!topic,
+      }
+    })
+    .sort((a, b) => {
+      if (a.ready !== b.ready) return a.ready ? 1 : -1
+      if (a.completed !== b.completed) return a.completed - b.completed
+      return a.name.localeCompare(b.name)
+    })
 
   return (
     <div className="space-y-8 max-w-2xl">
@@ -114,16 +154,16 @@ export default async function TeamDetailPage({ params }: { params: Promise<{ id:
         />
       </section>
 
-      {/* Live-session topic choices */}
+      {/* Pre-session readiness */}
       {team.pre_session_section_id && (
         <section className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
           <div>
-            <h2 className="font-heading text-base font-semibold text-gray-800">Live session topic choices</h2>
+            <h2 className="font-heading text-base font-semibold text-gray-800">Live session readiness</h2>
             <p className="mt-1 text-sm text-gray-500">
-              What each learner picked to work on in the live session, from the pre-session path.
+              Who&apos;s finished the pre-session path and picked a project, vs. who still needs a nudge.
             </p>
           </div>
-          <TopicChoicesPanel choices={topicChoices} />
+          <PreSessionReadinessPanel readiness={readiness} />
         </section>
       )}
 
