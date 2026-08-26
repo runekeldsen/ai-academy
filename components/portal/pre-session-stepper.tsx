@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ModuleContent } from '@/components/portal/module-content'
@@ -36,6 +36,10 @@ export function PreSessionStepper({
   const [saving, setSaving] = useState(false)
   const [confirmingRedo, setConfirmingRedo] = useState(false)
   const [redoing, setRedoing] = useState(false)
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [index, finished])
 
   async function handleSkip() {
     await dismissPreSession()
